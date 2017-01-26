@@ -30,6 +30,7 @@ public class Client {
             String userMessage;
             while((userMessage = userBF.readLine()) != null) {
                 ps.println(userMessage);
+                ps.flush();
                 System.out.println("Server:" + bf.readLine());
             }
         } catch (UnknownHostException uhe) {
