@@ -1,7 +1,5 @@
 package main.server;
 
-import org.omg.PortableServer.POA;
-
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,9 +11,9 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 
 public class Server {
-    private ServerSocket serverSocket  = null;
-    private int    port                = 8181;//By default
-    private Thread serverThread        = null;
+    private ServerSocket serverSocket               = null;
+    private int    port                             = 8181;//By default
+    private Thread serverThread                     = null;
     BlockingQueue<SocketHandler> socketHandlerQueue = new LinkedBlockingQueue<SocketHandler>();
 
     private class SocketHandler implements Runnable {
@@ -25,8 +23,8 @@ public class Server {
 
         public SocketHandler(Socket socket) throws IOException {
             this.socket = socket;
-            br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            bw = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            br          = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            bw          = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         }
 
         public void run() {
@@ -52,6 +50,7 @@ public class Server {
                             shutdownServer();
                         }
                     } else {
+                        System.out.println("From client: " + clientMessage);
                         for(SocketHandler socketHandler: socketHandlerQueue) {
                             socketHandler.sendMessage(clientMessage);
                         }
@@ -113,12 +112,13 @@ public class Server {
     }
 
     public void runServer() {
-        serverThread = Thread.currentThread();
+        serverThread  = Thread.currentThread();
         Socket socket = null;
 
         while(true) {
             try {
                 socket = serverSocket.accept();
+                System.out.println("Accepted from " + socket.getInetAddress());
             } catch(IOException ioe) {
                 ioe.printStackTrace();
                 shutdownServer();
@@ -129,7 +129,7 @@ public class Server {
                 if(socket != null) {
                     try {
                         final SocketHandler socketHandler = new SocketHandler(socket);
-                        final Thread thread = new Thread(socketHandler);//Separate asynchronouse Thread for reading from socket
+                        final Thread thread               = new Thread(socketHandler);//Separate asynchronouse Thread for reading from socket
 
                         thread.setDaemon(true);//Setting it to daemon
                         thread.start();//Starting thread
