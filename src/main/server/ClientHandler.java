@@ -1,4 +1,4 @@
-package server;
+package main.server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,8 +34,7 @@ public class ClientHandler implements Runnable {
         try {
             String clientMessage;
             while((clientMessage = bf.readLine()) != null) {
-                System.out.println("# " + clientNumber + " client says: ");
-                System.out.println(clientMessage);
+                System.out.println("# " + clientNumber + " client says:\n" + clientMessage);
                 ps.println("# " + clientNumber + " says: " + clientMessage);
                 if(clientMessage.equalsIgnoreCase("QUIT")) {
                     System.out.println("Client # " + clientNumber + "is quitning.");
