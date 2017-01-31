@@ -4,7 +4,8 @@ import java.io.*;
 import java.net.Socket;
 
 /**
- * Created by vladislav on 1/26/17.
+ * Client side console class.
+ * @author Vladislav Klochkov
  */
 
 public class Client {
@@ -21,18 +22,18 @@ public class Client {
                     message = br.readLine();
                 } catch(IOException ioe) {
                     if("Socket closed".equals(ioe.getMessage())) {
-                        System.out.println("Server is stopped");
+                        System.out.println("Server has been stopped.");
                         break;
                     }
-                    System.out.println("Connection lost");
+                    System.out.println("Connection lost.");
                     closeSocketConnection();
                 }
 
                 if(message == null) {
-                    System.out.println("Server closed this connection");
+                    System.out.println("Server closed this connection.");
                     closeSocketConnection();
                 } else {
-                    System.out.println("Server: " + message);
+                    System.out.println(message);
                 }
             }
         }
@@ -45,9 +46,114 @@ public class Client {
             bw     = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             userBR = new BufferedReader(new InputStreamReader(System.in));
 
-            Thread newThread = new Thread(new ClientHandler()); //Creating
-            newThread.start();                             //and starting asynchronous Thread connection
+            System.out.println("Connected to the server " + host + " on port " + port);
+
+            boolean isAuthorized = false;
+            String serverSays = null;
+            try {
+                serverSays = br.readLine();
+                System.out.println(serverSays);
+            } catch(IOException ioe) {
+                ioe.printStackTrace();
+            }
+            if(serverSays.equals("Client is not authorized.")){
+                System.out.println("You are not authorized. You can login or signup. Type your option:");
+                String option = null;
+                try {
+                    option = userBR.readLine();
+                } catch(IOException ioe) {
+                    ioe.printStackTrace();
+                }
+                if(option.equals("login")) {
+                    try {
+                        bw.write("login");
+                        bw.write("\n");
+                        bw.flush();
+                    } catch (IOException ioe) {
+                        ioe.printStackTrace();
+                    }
+                    while(!isAuthorized) {
+                        System.out.println("Please, enter username and password:");
+
+                        String username = null;
+                        String password = null;
+                        try {
+                            username = userBR.readLine();
+                            password = userBR.readLine();
+                        } catch (IOException ioe) {
+                            ioe.printStackTrace();
+                        }
+                        try {
+                            bw.write(username);
+                            bw.write("\n");
+                            bw.write(password);
+                            bw.write("\n");
+                            bw.flush();
+                        } catch (IOException ioe) {
+                            ioe.printStackTrace();
+                        }
+                        try {
+                            serverSays = br.readLine();
+                            System.out.println(serverSays);
+                        } catch(IOException ioe) {
+                            ioe.printStackTrace();
+                        }
+                        if (serverSays.equals("Client authorized.")) {
+                            isAuthorized = true;
+                            System.out.println("Client authorized.");
+                        }
+                    }
+                } else {
+                    if(option.equals("signup")) {
+                        try {
+                            bw.write("signup");
+                            bw.write("\n");
+                            bw.flush();
+                        } catch (IOException ioe) {
+                            ioe.printStackTrace();
+                        }
+                        try {
+                            serverSays = br.readLine();
+                        } catch(IOException ioe) {
+                            ioe.printStackTrace();
+                        }
+                        System.out.println(serverSays);
+                        String username = null;
+                        String password = null;
+                        try {
+                            username = userBR.readLine();
+                            password = userBR.readLine();
+                        } catch (IOException ioe) {
+                            ioe.printStackTrace();
+                        }
+                        try {
+                            bw.write(username);
+                            bw.write("\n");
+                            bw.write(password);
+                            bw.write("\n");
+                            bw.flush();
+                        } catch (IOException ioe) {
+                            ioe.printStackTrace();
+                        }
+                        try {
+                            serverSays = br.readLine();
+                        } catch(IOException ioe) {
+                            ioe.printStackTrace();
+                        }
+                        System.out.println(serverSays);
+                    } else {
+                        System.out.println("Error. Try again.");
+                    }
+                }
+            }
+
+            if(isAuthorized){
+                System.out.println("Creating new Thread.");
+                Thread newThread = new Thread(new ClientHandler()); //Creating
+                newThread.start();                                 //and starting asynchronous Thread connection
+            }
         } catch(IOException ioe) {
+            System.out.println("Can't connect to the server " + host + ":" + port);
             ioe.printStackTrace();
         }
     }
@@ -58,6 +164,7 @@ public class Client {
                 socket.close();
                 System.exit(0);
             } catch(IOException ioe) {
+                System.out.println("Error found while closing socket connection.");
                 ioe.printStackTrace();
             }
         }
@@ -72,8 +179,9 @@ public class Client {
             } catch(IOException ioe) {
                 ioe.printStackTrace();
             }
-
-            if((message == null) || (message.equalsIgnoreCase("QUIT")) || (socket.isClosed())) {
+            if((message == null) ||
+                    (message.equalsIgnoreCase("QUIT")) ||
+                    (socket.isClosed())) {
                 closeSocketConnection();
                 break;
             } else {
@@ -83,7 +191,6 @@ public class Client {
                     bw.flush();
                 } catch(IOException ioe) {
                     ioe.printStackTrace();
-                    closeSocketConnection();
                 }
             }
         }
