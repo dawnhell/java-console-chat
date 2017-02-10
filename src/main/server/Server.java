@@ -1,18 +1,15 @@
 package main.server;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import jdk.nashorn.internal.parser.JSONParser;
-import org.json.*;
 
 /**
  * Console server class.
@@ -39,7 +36,7 @@ public class Server {
         }
 
         public boolean authorize() {
-            System.out.println("Waiting for client's authorization.");
+            System.out.println("Waiting for client's logging in.");
 
             String username = null;
             String password = null;
@@ -51,13 +48,16 @@ public class Server {
             }
 
             JSONObject jsonObject = null;
+            JSONParser parser = new JSONParser();
             try {
-                jsonObject = new JSONObject(new String(Files.readAllBytes(Paths.get(System.getProperty("user.dir") + "/out/production/CourseWork/main/server/users.json"))));
-            } catch(FileNotFoundException fnfe) {
-                fnfe.printStackTrace();
-            } catch(IOException ioe) {
-                ioe.printStackTrace();
+                FileReader fileReader = new FileReader(System.getProperty("user.dir") + "/src/main/server/users.json");
+                jsonObject = (JSONObject) parser.parse(fileReader);
+
+                System.out.println(jsonObject);
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
+
             JSONArray arr = (JSONArray) jsonObject.get("users");
             Iterator<Object> iterator = arr.iterator();
             while (iterator.hasNext()) {
@@ -77,6 +77,7 @@ public class Server {
         }
 
         public void signUp() {
+            System.out.println("Waiting for client's singning up.");
             sendMessage("Enter username and password.");
 
             String username = null;
@@ -87,35 +88,40 @@ public class Server {
             } catch(IOException ioe) {
                 ioe.printStackTrace();
             }
+
             JSONObject jsonObject = null;
+            JSONParser parser = new JSONParser();
             try {
-                jsonObject = new JSONObject(new String(Files.readAllBytes(Paths.get(System.getProperty("user.dir") + "/src/main/server/users.json"))));
-            } catch(FileNotFoundException fnfe) {
-                fnfe.printStackTrace();
-            } catch(IOException ioe) {
-                ioe.printStackTrace();
+                FileReader fileReader = new FileReader(System.getProperty("user.dir") + "/src/main/server/users.json");
+                jsonObject = (JSONObject) parser.parse(fileReader);
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
-            JSONArray userAarr = (JSONArray) jsonObject.get("users");
+            JSONArray userArr = (JSONArray) jsonObject.get("users");
             JSONObject newUser = new JSONObject();
             newUser.put("username", username);
             newUser.put("password", password);
-            userAarr.put(newUser);
+            userArr.add(newUser);
             JSONObject usersObject = new JSONObject();
-            usersObject.put("users", userAarr);
-            try(FileWriter file = new FileWriter(System.getProperty("user.dir") + "/src/main/server/users.json")) {
-                    file.write(usersObject.toString());
-            } catch(IOException ioe) {
-                ioe.printStackTrace();
+            usersObject.put("users", userArr);
+
+            try {
+                FileWriter jsonFileWriter = new FileWriter(System.getProperty("user.dir") + "/src/main/server/users.json");
+                jsonFileWriter.write(usersObject.toJSONString());
+                jsonFileWriter.flush();
+                jsonFileWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+
+            System.out.println("User has been added.");
             sendMessage("User has been added.");
         }
 
         public void run() {
-            if(!isAuthorized){
-                sendMessage("Client is not authorized.");
-            }
             while(!socket.isClosed()) {
-                if(!isAuthorized) {
+                while(!isAuthorized) {
+                    sendMessage("Client is not authorized.");
                     String option = null;
                     try {
                         option = br.readLine();
@@ -123,40 +129,39 @@ public class Server {
                         ioe.printStackTrace();
                     }
                     if(option.equals("login")){
+                        System.out.println("in login");
                         isAuthorized = authorize();
-                    } else {
-                        if(option.equals("signup")){
-                            signUp();
-                            isAuthorized = authorize();
-                        }
                     }
-                } else {
-                    String clientMessage = null;
-                    try {
-                        clientMessage = br.readLine();
-                    } catch(IOException ioe) {
-                        System.out.println("Can't read client's message.");
-                        ioe.printStackTrace();
+                    if(option.equals("signup")){
+                        System.out.println("in signup");
+                        signUp();
                     }
+                }
+                String clientMessage = null;
+                try {
+                    clientMessage = br.readLine();
+                } catch(IOException ioe) {
+                    System.out.println("Can't read client's message.");
+                    ioe.printStackTrace();
+                }
 
-                    if(clientMessage.equalsIgnoreCase("QUIT")) {
-                        closeSocketConnection();
+                if(clientMessage.equalsIgnoreCase("QUIT")) {
+                    closeSocketConnection();
+                } else {
+                    if(clientMessage.equalsIgnoreCase("SHUTDOWN")) {
+                        serverThread.interrupt();
+                        try {
+                            /** Creating faked socket connection, to be able to interrupt */
+                            new Socket("localhost", port);
+                        } catch(IOException ioe) {
+                            ioe.printStackTrace();
+                        } finally {
+                            shutdownServer();
+                        }
                     } else {
-                        if(clientMessage.equalsIgnoreCase("SHUTDOWN")) {
-                            serverThread.interrupt();
-                            try {
-                                /** Creating faked socket connection, to be able to interrupt */
-                                new Socket("localhost", port);
-                            } catch(IOException ioe) {
-                                ioe.printStackTrace();
-                            } finally {
-                                shutdownServer();
-                            }
-                        } else {
-                            System.out.println("From client " + clientName + " : " + clientMessage);
-                            for(SocketHandler socketHandler: socketHandlerQueue) {
-                                socketHandler.sendMessage("From client " + clientName + " : " + clientMessage);
-                            }
+                        System.out.println("From client " + clientName + " : " + clientMessage);
+                        for(SocketHandler socketHandler: socketHandlerQueue) {
+                            socketHandler.sendMessage("From client " + clientName + " : " + clientMessage);
                         }
                     }
                 }

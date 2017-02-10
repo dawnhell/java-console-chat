@@ -50,99 +50,102 @@ public class Client {
 
             boolean isAuthorized = false;
             String serverSays = null;
-            try {
-                serverSays = br.readLine();
-                System.out.println(serverSays);
-            } catch(IOException ioe) {
-                ioe.printStackTrace();
-            }
-            if(serverSays.equals("Client is not authorized.")){
-                System.out.println("You are not authorized. You can login or signup. Type your option:");
-                String option = null;
+
+            while(!isAuthorized) {
                 try {
-                    option = userBR.readLine();
+                    serverSays = br.readLine();
+                    System.out.println(serverSays);
                 } catch(IOException ioe) {
                     ioe.printStackTrace();
                 }
-                if(option.equals("login")) {
+                if(serverSays.equals("Client is not authorized.")) {
+                    System.out.println("You are not authorized. You can login or signup. Type your option:");
+                    String option = null;
                     try {
-                        bw.write("login");
-                        bw.write("\n");
-                        bw.flush();
-                    } catch (IOException ioe) {
+                        option = userBR.readLine();
+                    } catch(IOException ioe) {
                         ioe.printStackTrace();
                     }
-                    while(!isAuthorized) {
-                        System.out.println("Please, enter username and password:");
+                    if(option.equals("login")) {
+                        try {
+                            bw.write("login");
+                            bw.write("\n");
+                            bw.flush();
+                        } catch (IOException ioe) {
+                            ioe.printStackTrace();
+                        }
+                        while(!isAuthorized) {
+                            System.out.println("Please, enter username and password:");
 
-                        String username = null;
-                        String password = null;
-                        try {
-                            username = userBR.readLine();
-                            password = userBR.readLine();
-                        } catch (IOException ioe) {
-                            ioe.printStackTrace();
+                            String username = null;
+                            String password = null;
+                            try {
+                                username = userBR.readLine();
+                                password = userBR.readLine();
+                            } catch (IOException ioe) {
+                                ioe.printStackTrace();
+                            }
+                            try {
+                                bw.write(username);
+                                bw.write("\n");
+                                bw.write(password);
+                                bw.write("\n");
+                                bw.flush();
+                            } catch (IOException ioe) {
+                                ioe.printStackTrace();
+                            }
+                            try {
+                                serverSays = br.readLine();
+                                System.out.println(serverSays);
+                            } catch(IOException ioe) {
+                                ioe.printStackTrace();
+                            }
+                            if (serverSays.equals("Client authorized.")) {
+                                isAuthorized = true;
+                                System.out.println("Client authorized.");
+                            }
                         }
-                        try {
-                            bw.write(username);
-                            bw.write("\n");
-                            bw.write(password);
-                            bw.write("\n");
-                            bw.flush();
-                        } catch (IOException ioe) {
-                            ioe.printStackTrace();
-                        }
-                        try {
-                            serverSays = br.readLine();
-                            System.out.println(serverSays);
-                        } catch(IOException ioe) {
-                            ioe.printStackTrace();
-                        }
-                        if (serverSays.equals("Client authorized.")) {
-                            isAuthorized = true;
-                            System.out.println("Client authorized.");
-                        }
-                    }
-                } else {
-                    if(option.equals("signup")) {
-                        try {
-                            bw.write("signup");
-                            bw.write("\n");
-                            bw.flush();
-                        } catch (IOException ioe) {
-                            ioe.printStackTrace();
-                        }
-                        try {
-                            serverSays = br.readLine();
-                        } catch(IOException ioe) {
-                            ioe.printStackTrace();
-                        }
-                        System.out.println(serverSays);
-                        String username = null;
-                        String password = null;
-                        try {
-                            username = userBR.readLine();
-                            password = userBR.readLine();
-                        } catch (IOException ioe) {
-                            ioe.printStackTrace();
-                        }
-                        try {
-                            bw.write(username);
-                            bw.write("\n");
-                            bw.write(password);
-                            bw.write("\n");
-                            bw.flush();
-                        } catch (IOException ioe) {
-                            ioe.printStackTrace();
-                        }
-                        try {
-                            serverSays = br.readLine();
-                        } catch(IOException ioe) {
-                            ioe.printStackTrace();
-                        }
-                        System.out.println(serverSays);
                     } else {
-                        System.out.println("Error. Try again.");
+                        if(option.equals("signup")) {
+                            try {
+                                bw.write("signup");
+                                bw.write("\n");
+                                bw.flush();
+                            } catch (IOException ioe) {
+                                ioe.printStackTrace();
+                            }
+                            try {
+                                serverSays = br.readLine();
+                            } catch(IOException ioe) {
+                                ioe.printStackTrace();
+                            }
+                            System.out.println(serverSays);
+                            String username = null;
+                            String password = null;
+                            try {
+                                username = userBR.readLine();
+                                password = userBR.readLine();
+                            } catch (IOException ioe) {
+                                ioe.printStackTrace();
+                            }
+                            try {
+                                bw.write(username);
+                                bw.write("\n");
+                                bw.write(password);
+                                bw.write("\n");
+                                bw.flush();
+                            } catch (IOException ioe) {
+                                ioe.printStackTrace();
+                            }
+                            try {
+                                serverSays = br.readLine();
+                            } catch(IOException ioe) {
+                                ioe.printStackTrace();
+                            }
+                            System.out.println(serverSays);
+                        } else {
+                            System.out.println("Error. Try again.");
+                        }
                     }
                 }
             }
