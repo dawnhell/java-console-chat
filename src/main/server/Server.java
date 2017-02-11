@@ -23,11 +23,11 @@ public class Server {
     private BlockingQueue<SocketHandler> socketHandlerQueue = new LinkedBlockingQueue<SocketHandler>();
 
     private class SocketHandler implements Runnable {
-        private Socket         socket;
-        private BufferedReader br;
-        private BufferedWriter bw;
-        private boolean        isAuthorized = false;
-        private String         clientName   = null;
+        private Socket          socket;
+        private BufferedReader  br;
+        private BufferedWriter  bw;
+        private boolean         isAuthorized = false;
+        private String          clientName   = null;
 
         public SocketHandler(Socket socket) throws IOException {
             this.socket = socket;
@@ -48,22 +48,20 @@ public class Server {
             }
 
             JSONObject jsonObject = null;
-            JSONParser parser = new JSONParser();
+            JSONParser parser     = new JSONParser();
             try {
                 FileReader fileReader = new FileReader(System.getProperty("user.dir") + "/src/main/server/users.json");
                 jsonObject = (JSONObject) parser.parse(fileReader);
-
-                System.out.println(jsonObject);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
 
-            JSONArray arr = (JSONArray) jsonObject.get("users");
+            JSONArray        arr      = (JSONArray) jsonObject.get("users");
             Iterator<Object> iterator = arr.iterator();
             while (iterator.hasNext()) {
-                JSONObject temp = (JSONObject) iterator.next();
-                String tempUsername = (String) temp.get("username");
-                String tempPassword = (String) temp.get("password");
+                JSONObject temp         = (JSONObject) iterator.next();
+                String     tempUsername = (String) temp.get("username");
+                String     tempPassword = (String) temp.get("password");
                 if(username.equals(tempUsername) && password.equals(tempPassword)) {
                     System.out.println("Client " + username + " authorized.");
                     clientName = username;
@@ -90,15 +88,16 @@ public class Server {
             }
 
             JSONObject jsonObject = null;
-            JSONParser parser = new JSONParser();
+            JSONParser parser     = new JSONParser();
             try {
                 FileReader fileReader = new FileReader(System.getProperty("user.dir") + "/src/main/server/users.json");
                 jsonObject = (JSONObject) parser.parse(fileReader);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-            JSONArray userArr = (JSONArray) jsonObject.get("users");
+            JSONArray  userArr = (JSONArray) jsonObject.get("users");
             JSONObject newUser = new JSONObject();
+
             newUser.put("username", username);
             newUser.put("password", password);
             userArr.add(newUser);

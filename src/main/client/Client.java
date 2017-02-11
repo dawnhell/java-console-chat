@@ -49,7 +49,7 @@ public class Client {
             System.out.println("Connected to the server " + host + " on port " + port);
 
             boolean isAuthorized = false;
-            String serverSays = null;
+            String  serverSays   = null;
 
             while(!isAuthorized) {
                 try {
@@ -65,6 +65,14 @@ public class Client {
                         option = userBR.readLine();
                     } catch(IOException ioe) {
                         ioe.printStackTrace();
+                    }
+                    while(!option.equals("login") && !option.equals("signup")) {
+                        System.out.println("Error. Try again.");
+                        try {
+                            option = userBR.readLine();
+                        } catch(IOException ioe) {
+                            ioe.printStackTrace();
+                        }
                     }
                     if(option.equals("login")) {
                         try {
@@ -143,8 +151,6 @@ public class Client {
                                 ioe.printStackTrace();
                             }
                             System.out.println(serverSays);
-                        } else {
-                            System.out.println("Error. Try again.");
                         }
                     }
                 }
