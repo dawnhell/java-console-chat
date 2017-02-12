@@ -13,6 +13,18 @@ public class ClientGUI extends JFrame {
     private final static String DefaultHost = "localhost";
     private final static int    DefaultPort = 8181;
 
+    public static JLabel             hostJLabel              = null;
+    public static JTextField         hostJTextField          = null;
+    public static JLabel             portJLabel              = null;
+    public static JTextField         portJTextField          = null;
+    public static JButton            connectJButton          = null;
+    public static JButton            disconnectJButton       = null;
+    public static JTextArea          messagesJTextArea       = null;
+    public static JLabel             clientMessageJLabel     = null;
+    public static JTextField         clientMessageJTextField = null;
+    public static JButton            sendJButton             = null;
+    public static GridBagConstraints gridBagConstraints      = null;
+
     public static String getDefaultHost() {
         return DefaultHost;
     }
@@ -21,58 +33,175 @@ public class ClientGUI extends JFrame {
         return DefaultPort;
     }
 
-    public static void main(String []args) {
-        JFrame jFrame = new JFrame("ClientGUI");
-        jFrame.setLayout(new FlowLayout());
+    public static void addHostJLabel(Container pane) {
+        hostJLabel = new JLabel("Host: ");
 
-        JLabel hostJLabel = new JLabel("Host: ");
-        hostJLabel.setBounds(10, 10, 50, 30);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.insets = new Insets(10, 10, 10, 10);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 5;
+        gridBagConstraints.ipady = 5;
 
-        JTextField hostJTextField = new JTextField(getDefaultHost());
-        hostJTextField.setBounds(60, 10, 150, 30);
+        pane.add(hostJLabel, gridBagConstraints);
+    }
 
-        JLabel portJLabel = new JLabel("Port: ");
-        portJLabel.setBounds(230, 10, 50, 30);
+    public static void addHostJTextField(Container pane) {
+        hostJTextField = new JTextField(getDefaultHost());
 
-        JTextField portJTextField = new JTextField(getDefaultPort() + "");
-        portJTextField.setBounds(280, 10, 150, 30);
+        gridBagConstraints.insets = new Insets(10, 5, 10, 5);
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 70;
+        gridBagConstraints.ipady = 5;
 
-        JButton connectJButton = new JButton("Connect");
-        connectJButton.setBounds(450, 10, 130, 30);
+        pane.add(hostJTextField, gridBagConstraints);
+    }
+
+    public static void addPortJLabel(Container pane) {
+        portJLabel = new JLabel("Port: ");
+
+        gridBagConstraints.insets = new Insets(10, 10, 10, 10);
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 5;
+        gridBagConstraints.ipady = 5;
+
+        pane.add(portJLabel, gridBagConstraints);
+    }
+
+    public static void addPortJTextField(Container pane) {
+        portJTextField = new JTextField(getDefaultPort() + "");
+
+        gridBagConstraints.insets = new Insets(10, 5, 10, 5);
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 70;
+        gridBagConstraints.ipady = 5;
+
+        pane.add(portJTextField, gridBagConstraints);
+    }
+
+    public static void addConnectionJButtons(Container pane) {
+        connectJButton = new JButton("Connect");
+        disconnectJButton = new JButton("Disconnect");
+        disconnectJButton.setEnabled(false);
+
         connectJButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                connectJButton.setText("Connecting...");
                 connectJButton.setEnabled(false);
+                disconnectJButton.setEnabled(true);
+            }
+        });
+        disconnectJButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                connectJButton.setEnabled(true);
+                disconnectJButton.setEnabled(false);
             }
         });
 
-        JTextArea messagesJTextArea = new JTextArea();
-        messagesJTextArea.setBounds(10, 70, 400, 300);
+        gridBagConstraints.insets = new Insets(10, 10, 10, 10);
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 25;
+        gridBagConstraints.ipady = 5;
 
-        JLabel clientMessageJLabel = new JLabel("Your message:");
-        clientMessageJLabel.setBounds(10, 380, 200, 30);
+        pane.add(connectJButton, gridBagConstraints);
 
-        JTextArea clientMessageJTextArea = new JTextArea();
-        clientMessageJTextArea.setBounds(10, 410, 310, 50);
+        gridBagConstraints.insets = new Insets(10, 10, 10, 10);
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 5;
+        gridBagConstraints.ipady = 5;
 
-        JButton sendJButton = new JButton("Send");
-        sendJButton.setBounds(330, 420, 80, 30);
+        pane.add(disconnectJButton, gridBagConstraints);
+    }
 
+    public static void addMessageJTextArea(Container pane) {
+        messagesJTextArea = new JTextArea();
 
-        jFrame.add(hostJLabel);
-        jFrame.add(hostJTextField);
-        jFrame.add(portJLabel);
-        jFrame.add(portJTextField);
-        jFrame.add(connectJButton);
-        jFrame.add(messagesJTextArea);
-        jFrame.add(clientMessageJLabel);
-        jFrame.add(clientMessageJTextArea);
-        jFrame.add(sendJButton);
+        gridBagConstraints.insets = new Insets(10, 10, 10, 10);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.ipadx = 5;
+        gridBagConstraints.ipady = 300;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 
-        jFrame.setSize(600, 500);
-        jFrame.setLayout(null);
+        pane.add(messagesJTextArea, gridBagConstraints);
+    }
+
+    public static void addClientMessageJLabel(Container pane) {
+        clientMessageJLabel = new JLabel("Your message:");
+
+        gridBagConstraints.insets = new Insets(10, 10, 5, 10);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.ipadx = 5;
+        gridBagConstraints.ipady = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+
+        pane.add(clientMessageJLabel, gridBagConstraints);
+    }
+
+    public static void addClientMessageJTextField(Container pane) {
+        clientMessageJTextField = new JTextField();
+
+        gridBagConstraints.insets = new Insets(5, 10, 10, 10);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.ipadx = 5;
+        gridBagConstraints.ipady = 10;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+
+        pane.add(clientMessageJTextField, gridBagConstraints);
+    }
+
+    public static void addSendJButton(Container pane) {
+        sendJButton = new JButton("Send");
+
+        gridBagConstraints.insets = new Insets(0, 10, 5, 10);
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.ipadx = 25;
+        gridBagConstraints.ipady = 5;
+
+        pane.add(sendJButton, gridBagConstraints);
+    }
+
+    public static void addComponentsToPane(Container pane) {
+        pane.setLayout(new GridBagLayout());
+
+        addHostJLabel(pane);
+        addHostJTextField(pane);
+        addPortJLabel(pane);
+        addPortJTextField(pane);
+        addConnectionJButtons(pane);
+        addMessageJTextArea(pane);
+        addClientMessageJLabel(pane);
+        addClientMessageJTextField(pane);
+        addSendJButton(pane);
+    }
+
+    public static void createAndShowGIU() {
+        JFrame jFrame = new JFrame("ClientGUI");
         jFrame.setDefaultCloseOperation(jFrame.EXIT_ON_CLOSE);
+
+        addComponentsToPane(jFrame.getContentPane());
+
+        jFrame.pack();
         jFrame.setVisible(true);
+    }
+
+    public static void main(String []args) {
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    createAndShowGIU();
+                }
+            });
     }
 }
