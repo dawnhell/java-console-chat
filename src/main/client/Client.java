@@ -1,5 +1,7 @@
 package main.client;
 
+import main.clientGUI.ClientGUI;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -8,7 +10,7 @@ import java.net.Socket;
  * @author Vladislav Klochkov
  */
 
-public class Client {
+public class Client extends ClientGUI {
     private  Socket         socket = null;
     private  BufferedReader br     = null;
     private  BufferedWriter bw     = null;
@@ -23,17 +25,21 @@ public class Client {
                 } catch(IOException ioe) {
                     if("Socket closed".equals(ioe.getMessage())) {
                         System.out.println("Server has been stopped.");
+                        messagesJTextArea.append("\nServer has been stopped.");
                         break;
                     }
                     System.out.println("Connection lost.");
+                    messagesJTextArea.append("Connection lost.");
                     closeSocketConnection();
                 }
 
                 if(message == null) {
                     System.out.println("Server closed this connection.");
+                    messagesJTextArea.append("\nServer closed this connection.");
                     closeSocketConnection();
                 } else {
                     System.out.println(message);
+                    messagesJTextArea.append(message);
                 }
             }
         }
@@ -47,6 +53,7 @@ public class Client {
             userBR = new BufferedReader(new InputStreamReader(System.in));
 
             System.out.println("Connected to the server " + host + " on port " + port);
+            messagesJTextArea.append("\nConnected to the server " + host + " on port " + port);
 
             boolean isAuthorized = false;
             String  serverSays   = null;
@@ -60,6 +67,7 @@ public class Client {
                 }
                 if(serverSays.equals("Client is not authorized.")) {
                     System.out.println("You are not authorized. You can login or signup. Type your option:");
+                    messagesJTextArea.append("\nYou are not authorized. You can login or signup. \nType your option:");
                     String option = null;
                     try {
                         option = userBR.readLine();
@@ -174,6 +182,7 @@ public class Client {
                 System.exit(0);
             } catch(IOException ioe) {
                 System.out.println("Error found while closing socket connection.");
+                messagesJTextArea.append("\nError found while closing socket connection.");
                 ioe.printStackTrace();
             }
         }
@@ -181,6 +190,7 @@ public class Client {
 
     public void runClient() {
         System.out.println("Enter your message(quit for exiting)");
+        messagesJTextArea.append("\nEnter your message(quit for exiting)");
         while(true) {
             String message = null;
             try {
@@ -205,12 +215,14 @@ public class Client {
         }
     }
 
-    public static void main(String []args) throws IOException {
-        final int       PORT   = 8181;
-        final String    HOST   = "localhost";
+    public static void main(String []args)/* throws IOException*/ {
+        /*createAndShowGIU();
+
+        String host = getCurrentHost();
+        int    port = getCurrentPort();
 
         Client client;
-        client = new Client(HOST, PORT);
-        client.runClient();
+        client = new Client(host, port);
+        client.runClient();*/
     }
 }

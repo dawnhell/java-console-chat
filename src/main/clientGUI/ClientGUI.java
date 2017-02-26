@@ -1,12 +1,17 @@
 package main.clientGUI;
 
+import main.client.Client;
+import org.json.simple.parser.ContentHandler;
+import sun.java2d.xr.GrowableIntArray;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * Created by vladislav on 2/11/17.
+ * Client side console class.
+ * @author Vladislav Klochkov
  */
 
 public class ClientGUI extends JFrame {
@@ -25,12 +30,29 @@ public class ClientGUI extends JFrame {
     public static JButton            sendJButton             = null;
     public static GridBagConstraints gridBagConstraints      = null;
 
+    public static JLabel             authJLabel              = null;
+    public static JLabel             usernameJLabel          = null;
+    public static JLabel             passwordJLabel          = null;
+    public static JTextField         usernameJTextField      = null;
+    public static JPasswordField     passwordJPasswordField  = null;
+    public static JPanel             authJPanel              = null;
+    public static JButton            loginJButton            = null;
+    public static JButton            signupJButton           = null;
+
     public static String getDefaultHost() {
         return DefaultHost;
     }
 
     public static int getDefaultPort() {
         return DefaultPort;
+    }
+
+    public static String getCurrentHost() {
+        return hostJTextField.getText();
+    }
+
+    public static int getCurrentPort() {
+        return Integer.parseInt(portJTextField.getText());
     }
 
     public static void addHostJLabel(Container pane) {
@@ -92,6 +114,11 @@ public class ClientGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 connectJButton.setEnabled(false);
                 disconnectJButton.setEnabled(true);
+
+                System.out.println("trying to connect");
+
+                Client client = new Client(hostJTextField.getText(), Integer.parseInt(portJTextField.getText()));
+                client.runClient();
             }
         });
         disconnectJButton.addActionListener(new ActionListener() {
@@ -119,8 +146,9 @@ public class ClientGUI extends JFrame {
         pane.add(disconnectJButton, gridBagConstraints);
     }
 
-    public static void addMessageJTextArea(Container pane) {
+    public static void addMessagesJTextArea(Container pane) {
         messagesJTextArea = new JTextArea();
+        messagesJTextArea.setEditable(false);
 
         gridBagConstraints.insets = new Insets(10, 10, 10, 10);
         gridBagConstraints.gridx = 0;
@@ -129,6 +157,10 @@ public class ClientGUI extends JFrame {
         gridBagConstraints.ipady = 300;
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+
+//        JScrollPane jScrollPane = new JScrollPane(messagesJTextArea);
+//        jScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+//        Add scrollbar
 
         pane.add(messagesJTextArea, gridBagConstraints);
     }
@@ -181,7 +213,7 @@ public class ClientGUI extends JFrame {
         addPortJLabel(pane);
         addPortJTextField(pane);
         addConnectionJButtons(pane);
-        addMessageJTextArea(pane);
+        addMessagesJTextArea(pane);
         addClientMessageJLabel(pane);
         addClientMessageJTextField(pane);
         addSendJButton(pane);
@@ -197,11 +229,96 @@ public class ClientGUI extends JFrame {
         jFrame.setVisible(true);
     }
 
+    public static void addAuthJLabel(Container pane) {
+        authJLabel = new JLabel("Please, login or signup");
+
+        gridBagConstraints = new GridBagConstraints();
+
+        gridBagConstraints.anchor = GridBagConstraints.CENTER;
+        gridBagConstraints.insets = new Insets(10, 10, 10, 10);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 5;
+        gridBagConstraints.ipady = 5;
+        gridBagConstraints.gridwidth = 2;
+
+        pane.add(authJLabel, gridBagConstraints);
+    }
+
+    public static void addAuthJPanel(Container pane) {
+        authJPanel             = new JPanel(new GridBagLayout());
+        usernameJLabel         = new JLabel("Username:");
+        passwordJLabel         = new JLabel("Password:");
+        usernameJTextField     = new JTextField(15);
+        passwordJPasswordField = new JPasswordField(15);
+
+        gridBagConstraints.anchor    = GridBagConstraints.WEST;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.ipadx     = 5;
+        gridBagConstraints.ipady     = 5;
+
+        gridBagConstraints.gridx  = 0;
+        gridBagConstraints.gridy  = 1;
+        gridBagConstraints.insets = new Insets(10, 10, 0, 10);
+        pane.add(usernameJLabel, gridBagConstraints);
+
+        gridBagConstraints.gridx  = 0;
+        gridBagConstraints.gridy  = 2;
+        gridBagConstraints.insets = new Insets(0, 10, 10, 10);
+        pane.add(usernameJTextField, gridBagConstraints);
+
+        gridBagConstraints.gridx  = 0;
+        gridBagConstraints.gridy  = 3;
+        gridBagConstraints.insets = new Insets(10, 10, 0, 10);
+        pane.add(passwordJLabel, gridBagConstraints);
+
+        gridBagConstraints.gridx  = 0;
+        gridBagConstraints.gridy  = 4;
+        gridBagConstraints.insets = new Insets(0, 10, 10, 10);
+        pane.add(passwordJPasswordField, gridBagConstraints);
+
+    }
+
+    public static void addAuthJButtons(Container pane) {
+        loginJButton = new JButton("Login");
+
+        gridBagConstraints.anchor    = GridBagConstraints.CENTER;
+        gridBagConstraints.gridwidth = 1;
+        gridBagConstraints.insets    = new Insets(10, 10, 10, 10);
+        gridBagConstraints.gridx     = 0;
+        gridBagConstraints.gridy     = 5;
+        gridBagConstraints.ipadx     = 5;
+        gridBagConstraints.ipady     = 5;
+
+        pane.add(loginJButton, gridBagConstraints);
+
+        signupJButton = new JButton("Signup");
+
+        gridBagConstraints        = new GridBagConstraints();
+        gridBagConstraints.anchor = GridBagConstraints.CENTER;
+        gridBagConstraints.insets = new Insets(10, 10, 10, 10);
+        gridBagConstraints.gridx  = 1;
+        gridBagConstraints.gridy  = 5;
+        gridBagConstraints.ipadx  = 5;
+        gridBagConstraints.ipady  = 5;
+
+        pane.add(signupJButton, gridBagConstraints);
+    }
+
+    public static void createAndShowAuthorization() {
+        JFrame authJFrame = new JFrame("Authorization");
+        authJFrame.setDefaultCloseOperation(authJFrame.EXIT_ON_CLOSE);
+        authJFrame.setLayout(new GridBagLayout());
+
+        addAuthJLabel(authJFrame);
+        addAuthJPanel(authJFrame);
+        addAuthJButtons(authJFrame);
+
+        authJFrame.pack();
+        authJFrame.setVisible(true);
+    }
+
     public static void main(String []args) {
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    createAndShowGIU();
-                }
-            });
+        createAndShowAuthorization();
     }
 }
