@@ -65,12 +65,12 @@ public class Server {
                 if(username.equals(tempUsername) && password.equals(tempPassword)) {
                     System.out.println("Client " + username + " authorized.");
                     clientName = username;
-                    sendMessage("Client authorized.");
+                    sendMessage("authorized");
                     return true;
                 }
             }
             System.out.println("Incorrect username or password.");
-            sendMessage("Incorrect username or password. Please, try again.");
+            sendMessage("incorrect");
             return false;
         }
 
@@ -120,7 +120,7 @@ public class Server {
         public void run() {
             while(!socket.isClosed()) {
                 while(!isAuthorized) {
-                    sendMessage("Client is not authorized.");
+                    sendMessage("notAuthorized");
                     String option = null;
                     try {
                         option = br.readLine();
@@ -128,11 +128,9 @@ public class Server {
                         ioe.printStackTrace();
                     }
                     if(option.equals("login")){
-                        System.out.println("in login");
                         isAuthorized = authorize();
                     }
                     if(option.equals("signup")){
-                        System.out.println("in signup");
                         signUp();
                     }
                 }

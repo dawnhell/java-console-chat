@@ -3,6 +3,10 @@ package main.client;
 import main.clientGUI.ClientGUI;
 
 import java.io.*;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.Socket;
 
 /**
@@ -11,10 +15,14 @@ import java.net.Socket;
  */
 
 public class Client extends ClientGUI {
-    private  Socket         socket = null;
-    private  BufferedReader br     = null;
-    private  BufferedWriter bw     = null;
-    private  BufferedReader userBR = null;
+    private Socket              socket      = null;
+    private BufferedReader      br          = null;
+    private BufferedWriter      bw          = null;
+    private BufferedReader      userBR      = null;
+    private static final String defaultHost = "localhost";
+    private static final int    defaultPort = 8181;
+
+    private static boolean isAuthorized = false;
 
     private class ClientHandler implements Runnable {
         public void run() {
@@ -25,21 +33,17 @@ public class Client extends ClientGUI {
                 } catch(IOException ioe) {
                     if("Socket closed".equals(ioe.getMessage())) {
                         System.out.println("Server has been stopped.");
-                        messagesJTextArea.append("\nServer has been stopped.");
                         break;
                     }
                     System.out.println("Connection lost.");
-                    messagesJTextArea.append("Connection lost.");
                     closeSocketConnection();
                 }
 
                 if(message == null) {
                     System.out.println("Server closed this connection.");
-                    messagesJTextArea.append("\nServer closed this connection.");
                     closeSocketConnection();
                 } else {
                     System.out.println(message);
-                    messagesJTextArea.append(message);
                 }
             }
         }
@@ -53,122 +57,129 @@ public class Client extends ClientGUI {
             userBR = new BufferedReader(new InputStreamReader(System.in));
 
             System.out.println("Connected to the server " + host + " on port " + port);
-            messagesJTextArea.append("\nConnected to the server " + host + " on port " + port);
 
-            boolean isAuthorized = false;
-            String  serverSays   = null;
-
+            createAndShowAuthorization();
             while(!isAuthorized) {
+                String serverSays = null;
                 try {
                     serverSays = br.readLine();
                     System.out.println(serverSays);
                 } catch(IOException ioe) {
                     ioe.printStackTrace();
                 }
-                if(serverSays.equals("Client is not authorized.")) {
-                    System.out.println("You are not authorized. You can login or signup. Type your option:");
-                    messagesJTextArea.append("\nYou are not authorized. You can login or signup. \nType your option:");
-                    String option = null;
-                    try {
-                        option = userBR.readLine();
-                    } catch(IOException ioe) {
-                        ioe.printStackTrace();
-                    }
-                    while(!option.equals("login") && !option.equals("signup")) {
-                        System.out.println("Error. Try again.");
-                        try {
-                            option = userBR.readLine();
-                        } catch(IOException ioe) {
-                            ioe.printStackTrace();
-                        }
-                    }
-                    if(option.equals("login")) {
-                        try {
-                            bw.write("login");
-                            bw.write("\n");
-                            bw.flush();
-                        } catch (IOException ioe) {
-                            ioe.printStackTrace();
-                        }
-                        while(!isAuthorized) {
-                            System.out.println("Please, enter username and password:");
 
-                            String username = null;
-                            String password = null;
+                if(serverSays.equals("notAuthorized")) {
+                    loginJButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
                             try {
-                                username = userBR.readLine();
-                                password = userBR.readLine();
-                            } catch (IOException ioe) {
-                                ioe.printStackTrace();
-                            }
-                            try {
-                                bw.write(username);
-                                bw.write("\n");
-                                bw.write(password);
+                                bw.write("login");
                                 bw.write("\n");
                                 bw.flush();
                             } catch (IOException ioe) {
                                 ioe.printStackTrace();
                             }
-                            try {
-                                serverSays = br.readLine();
-                                System.out.println(serverSays);
-                            } catch(IOException ioe) {
-                                ioe.printStackTrace();
-                            }
-                            if (serverSays.equals("Client authorized.")) {
-                                isAuthorized = true;
-                                System.out.println("Client authorized.");
+
+                            if (usernameJTextField.getText().length() == 0) {
+                                loginInvalidJLabel = new JLabel("Enter login!");
+                                gridBagConstraints = new GridBagConstraints();
+                                gridBagConstraints.anchor = GridBagConstraints.CENTER;
+                                gridBagConstraints.insets = new Insets(0, 0, 10, 0);
+                                gridBagConstraints.gridx = 2;
+                                gridBagConstraints.gridy = 2;
+                                gridBagConstraints.ipadx = 5;
+                                gridBagConstraints.ipady = 5;
+
+                                authJFrame.add(loginInvalidJLabel, gridBagConstraints);
+                                authJFrame.revalidate();
+                            } else {
+                                if (passwordJPasswordField.getPassword().length == 0) {
+                                    passwordInvalidJLabel = new JLabel("Enter password!");
+                                    gridBagConstraints = new GridBagConstraints();
+                                    gridBagConstraints.anchor = GridBagConstraints.CENTER;
+                                    gridBagConstraints.insets = new Insets(0, 0, 10, 0);
+                                    gridBagConstraints.gridx = 2;
+                                    gridBagConstraints.gridy = 4;
+                                    gridBagConstraints.ipadx = 5;
+                                    gridBagConstraints.ipady = 5;
+
+                                    authJFrame.add(passwordInvalidJLabel, gridBagConstraints);
+                                    authJFrame.revalidate();
+                                } else {
+                                    if (usernameJTextField.getText().length() != 0 &&
+                                            passwordJPasswordField.getPassword().length != 0) {
+                                        try {
+                                            bw.write(usernameJTextField.getText());
+                                            bw.write("\n");
+                                            bw.write(passwordJPasswordField.getPassword());
+                                            bw.write("\n");
+                                            bw.flush();
+                                        } catch (IOException ioe) {
+                                            ioe.printStackTrace();
+                                        }
+                                    }
+                                }
                             }
                         }
-                    } else {
-                        if(option.equals("signup")) {
-                            try {
-                                bw.write("signup");
-                                bw.write("\n");
-                                bw.flush();
-                            } catch (IOException ioe) {
-                                ioe.printStackTrace();
-                            }
-                            try {
-                                serverSays = br.readLine();
-                            } catch(IOException ioe) {
-                                ioe.printStackTrace();
-                            }
-                            System.out.println(serverSays);
-                            String username = null;
-                            String password = null;
-                            try {
-                                username = userBR.readLine();
-                                password = userBR.readLine();
-                            } catch (IOException ioe) {
-                                ioe.printStackTrace();
-                            }
-                            try {
-                                bw.write(username);
-                                bw.write("\n");
-                                bw.write(password);
-                                bw.write("\n");
-                                bw.flush();
-                            } catch (IOException ioe) {
-                                ioe.printStackTrace();
-                            }
-                            try {
-                                serverSays = br.readLine();
-                            } catch(IOException ioe) {
-                                ioe.printStackTrace();
-                            }
-                            System.out.println(serverSays);
-                        }
-                    }
+                    });
                 }
-            }
 
-            if(isAuthorized){
-                System.out.println("Creating new Thread.");
-                Thread newThread = new Thread(new ClientHandler()); //Creating
-                newThread.start();                                 //and starting asynchronous Thread connection
-            }
+                if (serverSays.equals("authorized")) {
+                    System.out.println("in author");
+                    isAuthorized = true;
+                    authJFrame.setVisible(false);
+                    createAndShowGIU();
+
+                    System.out.println("Creating new Thread.");
+                    Thread newThread = new Thread(new ClientHandler()); //Creating
+                    newThread.start();                                 //and starting asynchronous Thread connection
+                }
+
+                if(serverSays.equals("incorrect")) {
+                    System.out.println("not author");
+                    createAndShowIncorrectAuthJLabel(authJFrame);
+                    authJFrame.revalidate();
+                }
+//                        if(option.equals("signup")) {
+//                            try {
+//                                bw.write("signup");
+//                                bw.write("\n");
+//                                bw.flush();
+//                            } catch (IOException ioe) {
+//                                ioe.printStackTrace();
+//                            }
+//                            try {
+//                                serverSays = br.readLine();
+//                            } catch(IOException ioe) {
+//                                ioe.printStackTrace();
+//                            }
+//                            System.out.println(serverSays);
+//                            String username = null;
+//                            String password = null;
+//                            try {
+//                                username = userBR.readLine();
+//                                password = userBR.readLine();
+//                            } catch (IOException ioe) {
+//                                ioe.printStackTrace();
+//                            }
+//                            try {
+//                                bw.write(username);
+//                                bw.write("\n");
+//                                bw.write(password);
+//                                bw.write("\n");
+//                                bw.flush();
+//                            } catch (IOException ioe) {
+//                                ioe.printStackTrace();
+//                            }
+//                            try {
+//                                serverSays = br.readLine();
+//                            } catch(IOException ioe) {
+//                                ioe.printStackTrace();
+//                            }
+//                            System.out.println(serverSays);
+//                        }
+//                    }
+                }
         } catch(IOException ioe) {
             System.out.println("Can't connect to the server " + host + ":" + port);
             ioe.printStackTrace();
@@ -182,47 +193,47 @@ public class Client extends ClientGUI {
                 System.exit(0);
             } catch(IOException ioe) {
                 System.out.println("Error found while closing socket connection.");
-                messagesJTextArea.append("\nError found while closing socket connection.");
                 ioe.printStackTrace();
             }
+        }
+    }
+
+    public void sendMessageToServer(String message) {
+        try {
+            bw.write(message);
+            bw.write("\n");
+            bw.flush();
+        } catch(IOException ioe) {
+            ioe.printStackTrace();
         }
     }
 
     public void runClient() {
         System.out.println("Enter your message(quit for exiting)");
-        messagesJTextArea.append("\nEnter your message(quit for exiting)");
-        while(true) {
-            String message = null;
-            try {
-                message = userBR.readLine();
-            } catch(IOException ioe) {
-                ioe.printStackTrace();
-            }
-            if((message == null) ||
-                    (message.equalsIgnoreCase("QUIT")) ||
-                    (socket.isClosed())) {
-                closeSocketConnection();
-                break;
-            } else {
-                try {
-                    bw.write(message);
-                    bw.write("\n");
-                    bw.flush();
-                } catch(IOException ioe) {
-                    ioe.printStackTrace();
+        messagesJTextArea.append("Enter your message('quit' for exiting)");
+        sendJButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String message = clientMessageJTextField.getText();
+                if(message.equalsIgnoreCase("QUIT") || socket.isClosed()) {
+                    closeSocketConnection();
+                    System.out.println("Closed socket connection");
+                    clientMessageJTextField.setText("Closed socket connection");
+                } else {
+                    if(message.length() == 0) {
+                        clientMessageJTextField.setText("Enter your message!");
+                    } else {
+                        sendMessageToServer(message);
+                        clientMessageJTextField.setText("");
+                        messagesJTextArea.append("\n" + usernameJTextField.getText() + ": " + message);
+                    }
                 }
             }
-        }
+        });
     }
 
-    public static void main(String []args)/* throws IOException*/ {
-        /*createAndShowGIU();
-
-        String host = getCurrentHost();
-        int    port = getCurrentPort();
-
-        Client client;
-        client = new Client(host, port);
-        client.runClient();*/
+    public static void main(String []args) {
+        Client client = new Client(defaultHost, defaultPort);
+        client.runClient();
     }
 }
