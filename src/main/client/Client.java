@@ -21,11 +21,11 @@ import java.util.*;
  */
 
 public class Client extends ClientGUI {
-    private Socket              socket                  = null;
-    private BufferedReader      br                      = null;
-    private BufferedWriter      bw                      = null;
-    private static final String defaultHost             = "localhost";
-    private static final int    defaultPort             = 8181;
+    private Socket                   socket             = null;
+    private BufferedReader           br                 = null;
+    private BufferedWriter           bw                 = null;
+    private static final String      defaultHost        = "localhost";
+    private static final int         defaultPort        = 8181;
     private static ArrayList<String> clientUsernameList = new ArrayList<String>();
     private static JSONParser        jsonParser         = new JSONParser();
 
@@ -50,7 +50,6 @@ public class Client extends ClientGUI {
                     System.out.println("Server closed this connection.");
                     closeSocketConnection();
                 } else {
-                    JSONParser jsonParser = new JSONParser();
                     String clientUsername = null;
                     String clientMessage  = null;
                     try {
@@ -65,7 +64,50 @@ public class Client extends ClientGUI {
                         System.out.println(e);
                     }
 
-                    messagesJTextArea.append("\nFrom " + clientUsername + ": " + clientMessage);
+                    messagesJTextArea.append("\n" + clientUsername + ": " + clientMessage);
+                }
+            }
+        }
+    }
+
+    public void checkAndSendAuthorizationFields() {
+        if (usernameJTextField.getText().length() == 0) {
+            loginInvalidJLabel = new JLabel("Enter login!");
+            gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.anchor = GridBagConstraints.CENTER;
+            gridBagConstraints.insets = new Insets(0, 0, 10, 0);
+            gridBagConstraints.gridx = 2;
+            gridBagConstraints.gridy = 2;
+            gridBagConstraints.ipadx = 5;
+            gridBagConstraints.ipady = 5;
+
+            authJFrame.add(loginInvalidJLabel, gridBagConstraints);
+            authJFrame.revalidate();
+        } else {
+            if (passwordJPasswordField.getPassword().length == 0) {
+                passwordInvalidJLabel = new JLabel("Enter password!");
+                gridBagConstraints = new GridBagConstraints();
+                gridBagConstraints.anchor = GridBagConstraints.CENTER;
+                gridBagConstraints.insets = new Insets(0, 0, 10, 0);
+                gridBagConstraints.gridx = 2;
+                gridBagConstraints.gridy = 4;
+                gridBagConstraints.ipadx = 5;
+                gridBagConstraints.ipady = 5;
+
+                authJFrame.add(passwordInvalidJLabel, gridBagConstraints);
+                authJFrame.revalidate();
+            } else {
+                if (usernameJTextField.getText().length() != 0 &&
+                        passwordJPasswordField.getPassword().length != 0) {
+                    try {
+                        bw.write(usernameJTextField.getText());
+                        bw.write("\n");
+                        bw.write(passwordJPasswordField.getPassword());
+                        bw.write("\n");
+                        bw.flush();
+                    } catch (IOException ioe) {
+                        ioe.printStackTrace();
+                    }
                 }
             }
         }
@@ -101,47 +143,21 @@ public class Client extends ClientGUI {
                             } catch (IOException ioe) {
                                 ioe.printStackTrace();
                             }
+                            checkAndSendAuthorizationFields();
+                        }
+                    });
 
-                            if (usernameJTextField.getText().length() == 0) {
-                                loginInvalidJLabel = new JLabel("Enter login!");
-                                gridBagConstraints = new GridBagConstraints();
-                                gridBagConstraints.anchor = GridBagConstraints.CENTER;
-                                gridBagConstraints.insets = new Insets(0, 0, 10, 0);
-                                gridBagConstraints.gridx = 2;
-                                gridBagConstraints.gridy = 2;
-                                gridBagConstraints.ipadx = 5;
-                                gridBagConstraints.ipady = 5;
-
-                                authJFrame.add(loginInvalidJLabel, gridBagConstraints);
-                                authJFrame.revalidate();
-                            } else {
-                                if (passwordJPasswordField.getPassword().length == 0) {
-                                    passwordInvalidJLabel = new JLabel("Enter password!");
-                                    gridBagConstraints = new GridBagConstraints();
-                                    gridBagConstraints.anchor = GridBagConstraints.CENTER;
-                                    gridBagConstraints.insets = new Insets(0, 0, 10, 0);
-                                    gridBagConstraints.gridx = 2;
-                                    gridBagConstraints.gridy = 4;
-                                    gridBagConstraints.ipadx = 5;
-                                    gridBagConstraints.ipady = 5;
-
-                                    authJFrame.add(passwordInvalidJLabel, gridBagConstraints);
-                                    authJFrame.revalidate();
-                                } else {
-                                    if (usernameJTextField.getText().length() != 0 &&
-                                            passwordJPasswordField.getPassword().length != 0) {
-                                        try {
-                                            bw.write(usernameJTextField.getText());
-                                            bw.write("\n");
-                                            bw.write(passwordJPasswordField.getPassword());
-                                            bw.write("\n");
-                                            bw.flush();
-                                        } catch (IOException ioe) {
-                                            ioe.printStackTrace();
-                                        }
-                                    }
-                                }
+                    signupJButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            try {
+                                bw.write("signup");
+                                bw.write("\n");
+                                bw.flush();
+                            } catch (IOException ioe) {
+                                ioe.printStackTrace();
                             }
+                            checkAndSendAuthorizationFields();
                         }
                     });
                 }
@@ -165,49 +181,11 @@ public class Client extends ClientGUI {
 
                 if(((JSONObject) jsonParser.parse(serverSays)).get("status").equals("incorrect")) {
                     System.out.println("not authorized");
+                    isAuthorized = false;
                     createAndShowIncorrectAuthJLabel(authJFrame);
                     authJFrame.revalidate();
                 }
-//                        if(option.equals("signup")) {
-//                            try {
-//                                bw.write("signup");
-//                                bw.write("\n");
-//                                bw.flush();
-//                            } catch (IOException ioe) {
-//                                ioe.printStackTrace();
-//                            }
-//                            try {
-//                                serverSays = br.readLine();
-//                            } catch(IOException ioe) {
-//                                ioe.printStackTrace();
-//                            }
-//                            System.out.println(serverSays);
-//                            String username = null;
-//                            String password = null;
-//                            try {
-//                                username = userBR.readLine();
-//                                password = userBR.readLine();
-//                            } catch (IOException ioe) {
-//                                ioe.printStackTrace();
-//                            }
-//                            try {
-//                                bw.write(username);
-//                                bw.write("\n");
-//                                bw.write(password);
-//                                bw.write("\n");
-//                                bw.flush();
-//                            } catch (IOException ioe) {
-//                                ioe.printStackTrace();
-//                            }
-//                            try {
-//                                serverSays = br.readLine();
-//                            } catch(IOException ioe) {
-//                                ioe.printStackTrace();
-//                            }
-//                            System.out.println(serverSays);
-//                        }
-//                    }
-                }
+            }
         } catch(IOException ioe) {
             System.out.println("Can't connect to the server " + host + ":" + port);
             ioe.printStackTrace();
@@ -239,7 +217,6 @@ public class Client extends ClientGUI {
     }
 
     public void runClient() {
-//        System.out.println("Enter your message(quit for exiting)");
         messagesJTextArea.append("Enter your message('quit' for exiting)");
         sendJButton.addActionListener(new ActionListener() {
             @Override

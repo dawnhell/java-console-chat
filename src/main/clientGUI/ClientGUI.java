@@ -104,7 +104,7 @@ public class ClientGUI extends JFrame {
         gridBagConstraints.gridx  = 4;
         gridBagConstraints.gridy  = 0;
         gridBagConstraints.ipadx  = 5;
-        gridBagConstraints.ipady   = 5;
+        gridBagConstraints.ipady  = 5;
 
         pane.add(disconnectJButton, gridBagConstraints);
     }

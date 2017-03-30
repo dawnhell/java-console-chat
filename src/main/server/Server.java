@@ -90,9 +90,8 @@ public class Server {
             return false;
         }
 
-        public void signUp() {
+        public boolean signup() {
             System.out.println("Waiting for client's singning up.");
-            sendMessage("Enter username and password.");
 
             String username = null;
             String password = null;
@@ -111,6 +110,7 @@ public class Server {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
+
             JSONArray  userArr = (JSONArray) jsonObject.get("users");
             JSONObject newUser = new JSONObject();
 
@@ -128,15 +128,29 @@ public class Server {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
             System.out.println("User has been added.");
-            sendMessage("User has been added.");
+
+            clientName = username;
+            if(!clientUsernameList.contains(clientName)) {
+                clientUsernameList.add(clientName);
+            }
+
+            JSONObject answer = new JSONObject();
+            answer.put("status", "authorized");
+            answer.put("name", clientName);
+            answer.put("message", "Has just signed up!");
+            answer.put("users", clientUsernameList);
+            for(SocketHandler socketHandler: socketHandlerQueue) {
+                socketHandler.sendMessage(answer.toString());
+            }
+//            sendMessage(answer.toString());
+
+            return true;
         }
 
         public void run() {
             while(!socket.isClosed()) {
                 while(!isAuthorized) {
-//                    sendMessage("notAuthorized");
                     JSONObject answer = new JSONObject();
                     answer.put("status", "notAuthorized");
                     sendMessage(answer.toString());
@@ -150,7 +164,7 @@ public class Server {
                         isAuthorized = authorize();
                     }
                     if(option.equals("signup")){
-                        signUp();
+                        isAuthorized = signup();
                     }
                 }
                 String clientMessage = null;
