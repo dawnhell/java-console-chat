@@ -7,6 +7,7 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 /**
  * Client side console class.
@@ -14,15 +15,14 @@ import java.awt.event.ActionListener;
  */
 
 public class ClientGUI extends JFrame {
-    private final static String DefaultHost = "localhost";
-    private final static int    DefaultPort = 8181;
+    private final  static String     DefaultHost        = "localhost";
+    private final  static int        DefaultPort        = 8181;
 
     public static JFrame             mainJFrame              = null;
     public static JLabel             hostJLabel              = null;
     public static JTextField         hostJTextField          = null;
     public static JLabel             portJLabel              = null;
     public static JTextField         portJTextField          = null;
-    public static JButton            connectJButton          = null;
     public static JButton            disconnectJButton       = null;
     public static JTextArea          messagesJTextArea       = null;
     public static JLabel             clientMessageJLabel     = null;
@@ -64,11 +64,11 @@ public class ClientGUI extends JFrame {
     }
 
     public static void addHostJLabel(Container pane) {
-        hostJLabel = new JLabel("Host: ");
+        hostJLabel = new JLabel("You are connected to : " + getDefaultHost());
 
         gridBagConstraints        = new GridBagConstraints();
         gridBagConstraints.insets = new Insets(10, 10, 10, 10);
-        gridBagConstraints.gridx  = 0;
+        gridBagConstraints.gridx  = 1;
         gridBagConstraints.gridy  = 0;
         gridBagConstraints.ipadx  = 5;
         gridBagConstraints.ipady  = 5;
@@ -76,21 +76,8 @@ public class ClientGUI extends JFrame {
         pane.add(hostJLabel, gridBagConstraints);
     }
 
-    public static void addHostJTextField(Container pane) {
-        hostJTextField = new JTextField(getDefaultHost());
-
-        gridBagConstraints        = new GridBagConstraints();
-        gridBagConstraints.insets = new Insets(10, 5, 10, 5);
-        gridBagConstraints.gridx  = 1;
-        gridBagConstraints.gridy  = 0;
-        gridBagConstraints.ipadx  = 70;
-        gridBagConstraints.ipady  = 5;
-
-        pane.add(hostJTextField, gridBagConstraints);
-    }
-
     public static void addPortJLabel(Container pane) {
-        portJLabel = new JLabel("Port: ");
+        portJLabel = new JLabel("On port: " + getDefaultPort());
 
         gridBagConstraints        = new GridBagConstraints();
         gridBagConstraints.insets = new Insets(10, 10, 10, 10);
@@ -102,56 +89,19 @@ public class ClientGUI extends JFrame {
         pane.add(portJLabel, gridBagConstraints);
     }
 
-    public static void addPortJTextField(Container pane) {
-        portJTextField = new JTextField(getDefaultPort() + "");
-
-        gridBagConstraints        = new GridBagConstraints();
-        gridBagConstraints.insets = new Insets(10, 5, 10, 5);
-        gridBagConstraints.gridx  = 3;
-        gridBagConstraints.gridy  = 0;
-        gridBagConstraints.ipadx  = 70;
-        gridBagConstraints.ipady  = 5;
-
-        pane.add(portJTextField, gridBagConstraints);
-    }
-
-    public static void addConnectionJButtons(Container pane) {
-        connectJButton = new JButton("Connect");
+    public static void addDisconnectionJButtons(Container pane) {
         disconnectJButton = new JButton("Disconnect");
-        disconnectJButton.setEnabled(false);
-
-        connectJButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                connectJButton.setEnabled(false);
-                disconnectJButton.setEnabled(true);
-
-                System.out.println("trying to connect");
-
-                Client client = new Client(hostJTextField.getText(), Integer.parseInt(portJTextField.getText()));
-                client.runClient();
-            }
-        });
         disconnectJButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                connectJButton.setEnabled(true);
-                disconnectJButton.setEnabled(false);
+//                connectJButton.setEnabled(true);
+//                disconnectJButton.setEnabled(false);
             }
         });
 
         gridBagConstraints        = new GridBagConstraints();
         gridBagConstraints.insets = new Insets(10, 10, 10, 10);
         gridBagConstraints.gridx  = 4;
-        gridBagConstraints.gridy  = 0;
-        gridBagConstraints.ipadx  = 25;
-        gridBagConstraints.ipady  = 5;
-
-        pane.add(connectJButton, gridBagConstraints);
-
-        gridBagConstraints        = new GridBagConstraints();
-        gridBagConstraints.insets = new Insets(10, 10, 10, 10);
-        gridBagConstraints.gridx  = 5;
         gridBagConstraints.gridy  = 0;
         gridBagConstraints.ipadx  = 5;
         gridBagConstraints.ipady   = 5;
@@ -223,11 +173,10 @@ public class ClientGUI extends JFrame {
         pane.add(sendJButton, gridBagConstraints);
     }
 
-    public static void addContactsJList(Container pane) {
-        String subject[] = {"Math", "Computer", "Phisics", "Chemestry"};
+    public static void addContactsJList(Container pane, ArrayList<String> clientUsernameList) {
         defaultListModel = new DefaultListModel();
-        for(String subj: subject) {
-            defaultListModel.addElement(subj);
+        for(String username: clientUsernameList) {
+            defaultListModel.addElement(username);
         }
 
         contactsJList = new JList(defaultListModel);
@@ -254,26 +203,26 @@ public class ClientGUI extends JFrame {
         pane.add(jScrollPane, gridBagConstraints);
     }
 
-    public static void addComponentsToPane(Container pane) {
+    public static void setContactsJList(DefaultListModel defaultListModel) {
+        contactsJList.removeAll();
+        contactsJList.setModel(defaultListModel);
+    }
+
+    public static void createAndShowGIU(ArrayList<String> clientUsernameList) {
+        mainJFrame = new JFrame("ClientGUI");
+        mainJFrame.setDefaultCloseOperation(mainJFrame.EXIT_ON_CLOSE);
+
+        Container pane = mainJFrame.getContentPane();
         pane.setLayout(new GridBagLayout());
 
         addHostJLabel(pane);
-        addHostJTextField(pane);
         addPortJLabel(pane);
-        addPortJTextField(pane);
-        addConnectionJButtons(pane);
+        addDisconnectionJButtons(pane);
         addMessagesJTextArea(pane);
         addClientMessageJLabel(pane);
         addClientMessageJTextField(pane);
         addSendJButton(pane);
-        addContactsJList(pane);
-    }
-
-    public static void createAndShowGIU() {
-        mainJFrame = new JFrame("ClientGUI");
-        mainJFrame.setDefaultCloseOperation(mainJFrame.EXIT_ON_CLOSE);
-
-        addComponentsToPane(mainJFrame.getContentPane());
+        addContactsJList(pane, clientUsernameList);
 
         mainJFrame.pack();
         mainJFrame.setLocationRelativeTo(null);
@@ -355,45 +304,6 @@ public class ClientGUI extends JFrame {
         gridBagConstraints.ipadx     = 5;
         gridBagConstraints.ipady     = 5;
 
-//        loginJButton.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                if(usernameJTextField.getText().length() == 0) {
-//                    loginInvalidJLabel = new JLabel("Enter login!");
-//                    gridBagConstraints = new GridBagConstraints();
-//                    gridBagConstraints.anchor = GridBagConstraints.CENTER;
-//                    gridBagConstraints.insets = new Insets(0, 0, 10, 0);
-//                    gridBagConstraints.gridx  = 2;
-//                    gridBagConstraints.gridy  = 2;
-//                    gridBagConstraints.ipadx  = 5;
-//                    gridBagConstraints.ipady  = 5;
-//
-//                    pane.add(loginInvalidJLabel, gridBagConstraints);
-//                    pane.revalidate();
-//                }
-//
-//                if(passwordJPasswordField.getPassword().length == 0) {
-//                    passwordInvalidJLabel = new JLabel("Enter password!");
-//                    gridBagConstraints = new GridBagConstraints();
-//                    gridBagConstraints.anchor = GridBagConstraints.CENTER;
-//                    gridBagConstraints.insets = new Insets(0, 0, 10, 0);
-//                    gridBagConstraints.gridx  = 2;
-//                    gridBagConstraints.gridy  = 4;
-//                    gridBagConstraints.ipadx  = 5;
-//                    gridBagConstraints.ipady  = 5;
-//
-//                    pane.add(passwordInvalidJLabel, gridBagConstraints);
-//                    pane.revalidate();
-//                }
-//
-//                if(usernameJTextField.getText().length() != 0 &&
-//                        passwordJPasswordField.getPassword().length != 0) {
-//                    pane.setVisible(false);
-//
-//                }
-//            }
-//        });
-
         pane.add(loginJButton, gridBagConstraints);
 
         signupJButton = new JButton("Signup");
@@ -420,6 +330,7 @@ public class ClientGUI extends JFrame {
 
 //        authJFrame.pack();
 //        authJFrame.setSize(400, 250);
+        authJFrame.setResizable(false);
         authJFrame.setMinimumSize(new Dimension(400, 260));
 
 //        Dimension dimension = new Dimension(, authJFrame.getHeight());
@@ -428,5 +339,9 @@ public class ClientGUI extends JFrame {
 
         authJFrame.setLocationRelativeTo(null);
         authJFrame.setVisible(true);
+    }
+
+    public static void closeAuthorization() {
+        authJFrame.setVisible(false);
     }
 }

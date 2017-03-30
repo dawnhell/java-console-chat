@@ -7,6 +7,7 @@ import org.json.simple.parser.JSONParser;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -21,13 +22,14 @@ public class Server {
     private int                          port               = 8181;
     private Thread                       serverThread       = null;
     private BlockingQueue<SocketHandler> socketHandlerQueue = new LinkedBlockingQueue<SocketHandler>();
+    private ArrayList<String>            clientUsernameList = new ArrayList<String>();
 
     private class SocketHandler implements Runnable {
-        private Socket          socket;
-        private BufferedReader  br;
-        private BufferedWriter  bw;
-        private boolean         isAuthorized = false;
-        private String          clientName   = null;
+        private Socket            socket;
+        private BufferedReader    br;
+        private BufferedWriter    bw;
+        private boolean           isAuthorized = false;
+        private String            clientName   = null;
 
         public SocketHandler(Socket socket) throws IOException {
             this.socket = socket;
@@ -65,12 +67,26 @@ public class Server {
                 if(username.equals(tempUsername) && password.equals(tempPassword)) {
                     System.out.println("Client " + username + " authorized.");
                     clientName = username;
-                    sendMessage("authorized");
+                    if(!clientUsernameList.contains(clientName)) {
+                        clientUsernameList.add(clientName);
+                    }
+
+                    JSONObject answer = new JSONObject();
+                    answer.put("status", "authorized");
+                    answer.put("name", clientName);
+                    answer.put("message", "Has just connected.");
+                    answer.put("users", clientUsernameList);
+                    for(SocketHandler socketHandler: socketHandlerQueue) {
+                        socketHandler.sendMessage(answer.toString());
+                    }
+                    sendMessage(answer.toString());
                     return true;
                 }
             }
             System.out.println("Incorrect username or password.");
-            sendMessage("incorrect");
+            JSONObject answer = new JSONObject();
+            answer.put("status", "incorrect");
+            sendMessage(answer.toString());
             return false;
         }
 
@@ -120,7 +136,10 @@ public class Server {
         public void run() {
             while(!socket.isClosed()) {
                 while(!isAuthorized) {
-                    sendMessage("notAuthorized");
+//                    sendMessage("notAuthorized");
+                    JSONObject answer = new JSONObject();
+                    answer.put("status", "notAuthorized");
+                    sendMessage(answer.toString());
                     String option = null;
                     try {
                         option = br.readLine();
@@ -138,7 +157,7 @@ public class Server {
                 try {
                     clientMessage = br.readLine();
                 } catch(IOException ioe) {
-                    System.out.println("Can't read client's message.");
+                    System.out.println("Can't read client's authorization message.");
                     ioe.printStackTrace();
                 }
 
@@ -156,9 +175,15 @@ public class Server {
                             shutdownServer();
                         }
                     } else {
-                        System.out.println("From client " + clientName + " : " + clientMessage);
+                        System.out.println("From " + clientName + ": " + clientMessage);
+                        JSONObject message = new JSONObject();
+                        message.put("name", clientName);
+                        message.put("message", clientMessage);
+                        message.put("users", clientUsernameList);
                         for(SocketHandler socketHandler: socketHandlerQueue) {
-                            socketHandler.sendMessage("From client " + clientName + " : " + clientMessage);
+                            System.out.println(message);
+                            socketHandler.sendMessage(message.toString());
+//                            socketHandler.sendMessage("From " + clientName + ": " + clientMessage);
                         }
                     }
                 }
@@ -188,7 +213,6 @@ public class Server {
             }
         }
 
-        //Clear memory in the end. Not neccessary.
         @Override
         protected void finalize() throws Throwable {
             super.finalize();

@@ -2,12 +2,18 @@ package main.client;
 
 import main.clientGUI.ClientGUI;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 import java.io.*;
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.Socket;
+import java.util.*;
 
 /**
  * Client side console class.
@@ -15,12 +21,13 @@ import java.net.Socket;
  */
 
 public class Client extends ClientGUI {
-    private Socket              socket      = null;
-    private BufferedReader      br          = null;
-    private BufferedWriter      bw          = null;
-    private BufferedReader      userBR      = null;
-    private static final String defaultHost = "localhost";
-    private static final int    defaultPort = 8181;
+    private Socket              socket                  = null;
+    private BufferedReader      br                      = null;
+    private BufferedWriter      bw                      = null;
+    private static final String defaultHost             = "localhost";
+    private static final int    defaultPort             = 8181;
+    private static ArrayList<String> clientUsernameList = new ArrayList<String>();
+    private static JSONParser        jsonParser         = new JSONParser();
 
     private static boolean isAuthorized = false;
 
@@ -43,7 +50,22 @@ public class Client extends ClientGUI {
                     System.out.println("Server closed this connection.");
                     closeSocketConnection();
                 } else {
-                    System.out.println(message);
+                    JSONParser jsonParser = new JSONParser();
+                    String clientUsername = null;
+                    String clientMessage  = null;
+                    try {
+                        clientUsername  = (String) ((JSONObject) jsonParser.parse(message)).get("name");
+                        clientMessage   = (String) ((JSONObject) jsonParser.parse(message)).get("message");
+                        JSONArray users = (JSONArray) ((JSONObject) jsonParser.parse(message)).get("users");
+                        clientUsernameList = new ArrayList<String>();
+                        for(int i = 0; i < users.size(); ++i) {
+                            clientUsernameList.add((String) users.get(i));
+                        }
+                    } catch(Exception e) {
+                        System.out.println(e);
+                    }
+
+                    messagesJTextArea.append("\nFrom " + clientUsername + ": " + clientMessage);
                 }
             }
         }
@@ -54,11 +76,11 @@ public class Client extends ClientGUI {
             socket = new Socket(host, port);
             br     = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             bw     = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-            userBR = new BufferedReader(new InputStreamReader(System.in));
 
             System.out.println("Connected to the server " + host + " on port " + port);
 
             createAndShowAuthorization();
+
             while(!isAuthorized) {
                 String serverSays = null;
                 try {
@@ -68,7 +90,7 @@ public class Client extends ClientGUI {
                     ioe.printStackTrace();
                 }
 
-                if(serverSays.equals("notAuthorized")) {
+                if(((JSONObject) jsonParser.parse(serverSays)).get("status").equals("notAuthorized")) {
                     loginJButton.addActionListener(new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
@@ -124,19 +146,25 @@ public class Client extends ClientGUI {
                     });
                 }
 
-                if (serverSays.equals("authorized")) {
-                    System.out.println("in author");
+                if (((JSONObject) jsonParser.parse(serverSays)).get("status").equals("authorized")) {
+                    System.out.println("authorized");
                     isAuthorized = true;
-                    authJFrame.setVisible(false);
-                    createAndShowGIU();
 
-                    System.out.println("Creating new Thread.");
-                    Thread newThread = new Thread(new ClientHandler()); //Creating
-                    newThread.start();                                 //and starting asynchronous Thread connection
+                    JSONArray users = (JSONArray) ((JSONObject) jsonParser.parse(serverSays)).get("users");
+                    clientUsernameList = new ArrayList<String>();
+                    for(int i = 0; i < users.size(); ++i) {
+                        clientUsernameList.add((String) users.get(i));
+                    }
+
+                    closeAuthorization();
+                    createAndShowGIU(clientUsernameList);
+
+                    Thread newThread = new Thread(new ClientHandler());
+                    newThread.start();
                 }
 
-                if(serverSays.equals("incorrect")) {
-                    System.out.println("not author");
+                if(((JSONObject) jsonParser.parse(serverSays)).get("status").equals("incorrect")) {
+                    System.out.println("not authorized");
                     createAndShowIncorrectAuthJLabel(authJFrame);
                     authJFrame.revalidate();
                 }
@@ -183,6 +211,8 @@ public class Client extends ClientGUI {
         } catch(IOException ioe) {
             System.out.println("Can't connect to the server " + host + ":" + port);
             ioe.printStackTrace();
+        } catch (Exception e) {
+            System.out.println(e);
         }
     }
 
@@ -209,7 +239,7 @@ public class Client extends ClientGUI {
     }
 
     public void runClient() {
-        System.out.println("Enter your message(quit for exiting)");
+//        System.out.println("Enter your message(quit for exiting)");
         messagesJTextArea.append("Enter your message('quit' for exiting)");
         sendJButton.addActionListener(new ActionListener() {
             @Override
@@ -225,15 +255,30 @@ public class Client extends ClientGUI {
                     } else {
                         sendMessageToServer(message);
                         clientMessageJTextField.setText("");
-                        messagesJTextArea.append("\n" + usernameJTextField.getText() + ": " + message);
                     }
                 }
             }
         });
     }
 
+    public static void updateMainJFrame() {
+        Timer timer = new Timer(5000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final DefaultListModel defaultListModel = new DefaultListModel();
+                for(int i = 0; i < clientUsernameList.size(); ++i) {
+                    defaultListModel.addElement(clientUsernameList.get(i));
+                }
+                setContactsJList(defaultListModel);
+            }
+        });
+        timer.setRepeats(true);
+        timer.start();
+    }
+
     public static void main(String []args) {
         Client client = new Client(defaultHost, defaultPort);
         client.runClient();
+        updateMainJFrame();
     }
 }
