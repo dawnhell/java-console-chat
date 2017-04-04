@@ -37,6 +37,16 @@ public class Server {
             this.bw     = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         }
 
+        public String generateServerAnswer(String status, String clientName, String message) {
+            JSONObject answer = new JSONObject();
+            answer.put("status", status);
+            answer.put("name", clientName);
+            answer.put("message", message);
+            answer.put("users", clientUsernameList);
+
+            return answer.toString();
+        }
+
         public boolean authorize() {
             System.out.println("Waiting for client's logging in.");
 
@@ -71,22 +81,15 @@ public class Server {
                         clientUsernameList.add(clientName);
                     }
 
-                    JSONObject answer = new JSONObject();
-                    answer.put("status", "authorized");
-                    answer.put("name", clientName);
-                    answer.put("message", "Has just connected.");
-                    answer.put("users", clientUsernameList);
                     for(SocketHandler socketHandler: socketHandlerQueue) {
-                        socketHandler.sendMessage(answer.toString());
+                        socketHandler.sendMessage(generateServerAnswer("authorized",  clientName, "Has just connected."));
                     }
-                    sendMessage(answer.toString());
+//                    sendMessage(answer.toString());
                     return true;
                 }
             }
             System.out.println("Incorrect username or password.");
-            JSONObject answer = new JSONObject();
-            answer.put("status", "incorrect");
-            sendMessage(answer.toString());
+            sendMessage(generateServerAnswer("incorrect", "", ""));
             return false;
         }
 
@@ -135,15 +138,9 @@ public class Server {
                 clientUsernameList.add(clientName);
             }
 
-            JSONObject answer = new JSONObject();
-            answer.put("status", "authorized");
-            answer.put("name", clientName);
-            answer.put("message", "Has just signed up!");
-            answer.put("users", clientUsernameList);
             for(SocketHandler socketHandler: socketHandlerQueue) {
-                socketHandler.sendMessage(answer.toString());
+                socketHandler.sendMessage(generateServerAnswer("authorized", clientName, "Has just signed up!"));
             }
-//            sendMessage(answer.toString());
 
             return true;
         }
@@ -151,9 +148,7 @@ public class Server {
         public void run() {
             while(!socket.isClosed()) {
                 while(!isAuthorized) {
-                    JSONObject answer = new JSONObject();
-                    answer.put("status", "notAuthorized");
-                    sendMessage(answer.toString());
+                    sendMessage(generateServerAnswer("notAuthorized", "", ""));
                     String option = null;
                     try {
                         option = br.readLine();
@@ -190,14 +185,8 @@ public class Server {
                         }
                     } else {
                         System.out.println("From " + clientName + ": " + clientMessage);
-                        JSONObject message = new JSONObject();
-                        message.put("name", clientName);
-                        message.put("message", clientMessage);
-                        message.put("users", clientUsernameList);
                         for(SocketHandler socketHandler: socketHandlerQueue) {
-                            System.out.println(message);
-                            socketHandler.sendMessage(message.toString());
-//                            socketHandler.sendMessage("From " + clientName + ": " + clientMessage);
+                            socketHandler.sendMessage(generateServerAnswer("suthorized", clientName, clientMessage));
                         }
                     }
                 }
@@ -276,7 +265,6 @@ public class Server {
             } else {
                 if(socket != null) {
                     try {
-                        //Separate asynchronous Thread for reading from socket
                         final SocketHandler socketHandler = new SocketHandler(socket);
                         final Thread thread               = new Thread(socketHandler);
 
