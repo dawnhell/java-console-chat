@@ -37,10 +37,11 @@ public class Server {
             this.bw     = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         }
 
-        public String generateServerAnswer(String status, String clientName, String message) {
+        public String generateServerAnswer(String status, String clientName, String receiver, String message) {
             JSONObject answer = new JSONObject();
             answer.put("status", status);
             answer.put("name", clientName);
+            answer.put("receiver", receiver);
             answer.put("message", message);
             answer.put("users", clientUsernameList);
 
@@ -82,14 +83,14 @@ public class Server {
                     }
 
                     for(SocketHandler socketHandler: socketHandlerQueue) {
-                        socketHandler.sendMessage(generateServerAnswer("authorized",  clientName, "Has just connected."));
+                        socketHandler.sendMessage(generateServerAnswer("authorized", clientName, "everyone", "Has just connected."));
                     }
 //                    sendMessage(answer.toString());
                     return true;
                 }
             }
             System.out.println("Incorrect username or password.");
-            sendMessage(generateServerAnswer("incorrect", "", ""));
+            sendMessage(generateServerAnswer("incorrect", "", clientName, ""));
             return false;
         }
 
@@ -139,7 +140,7 @@ public class Server {
             }
 
             for(SocketHandler socketHandler: socketHandlerQueue) {
-                socketHandler.sendMessage(generateServerAnswer("authorized", clientName, "Has just signed up!"));
+                socketHandler.sendMessage(generateServerAnswer("authorized", clientName, clientName, "Has just signed up!"));
             }
 
             return true;
@@ -148,7 +149,7 @@ public class Server {
         public void run() {
             while(!socket.isClosed()) {
                 while(!isAuthorized) {
-                    sendMessage(generateServerAnswer("notAuthorized", "", ""));
+                    sendMessage(generateServerAnswer("notAuthorized", "", clientName, ""));
                     String option = null;
                     try {
                         option = br.readLine();
@@ -162,34 +163,45 @@ public class Server {
                         isAuthorized = signup();
                     }
                 }
+
+                String receiver      = null;
                 String clientMessage = null;
                 try {
-                    clientMessage = br.readLine();
-                } catch(IOException ioe) {
+                    String response = br.readLine();
+                    receiver = ((JSONObject) new JSONParser().parse(response)).get("receiver").toString();
+                    clientMessage = ((JSONObject) new JSONParser().parse(response)).get("message").toString();
+                } catch (Exception ex) {
                     System.out.println("Can't read client's authorization message.");
-                    ioe.printStackTrace();
+                    ex.printStackTrace();
                 }
 
-                if(clientMessage.equalsIgnoreCase("QUIT")) {
-                    closeSocketConnection();
-                } else {
-                    if(clientMessage.equalsIgnoreCase("SHUTDOWN")) {
-                        serverThread.interrupt();
-                        try {
+//                if(clientMessage.equalsIgnoreCase("QUIT")) {
+//                    closeSocketConnection();
+//                } else {
+//                    if(clientMessage.equalsIgnoreCase("SHUTDOWN")) {
+//                        serverThread.interrupt();
+//                        try {
                             /** Creating faked socket connection, to be able to interrupt */
-                            new Socket("localhost", port);
-                        } catch(IOException ioe) {
-                            ioe.printStackTrace();
-                        } finally {
-                            shutdownServer();
-                        }
-                    } else {
-                        System.out.println("From " + clientName + ": " + clientMessage);
-                        for(SocketHandler socketHandler: socketHandlerQueue) {
-                            socketHandler.sendMessage(generateServerAnswer("suthorized", clientName, clientMessage));
+//                            new Socket("localhost", port);
+//                        } catch(IOException ioe) {
+//                            ioe.printStackTrace();
+//                        } finally {
+//                            shutdownServer();
+//                        }
+                System.out.println("From " + clientName + ": " + clientMessage + " to" + receiver);
+
+                if(receiver.equals("everyone")) {
+                    for(SocketHandler socketHandler: socketHandlerQueue) {
+                        socketHandler.sendMessage(generateServerAnswer("authorized", clientName, "everyone", clientMessage));
+                    }
+                } else {
+                    for(SocketHandler socketHandler: socketHandlerQueue) {
+                        if(socketHandler.clientName.equals(receiver)) {
+                            socketHandler.sendMessage(generateServerAnswer("authorized", clientName, receiver, clientMessage));
                         }
                     }
                 }
+//                }
             }
         }
 

@@ -1,12 +1,8 @@
 package main.clientGUI;
 
-import main.client.Client;
-
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.util.ArrayList;
 
 /**
@@ -15,37 +11,39 @@ import java.util.ArrayList;
  */
 
 public class ClientGUI extends JFrame {
-    private final  static String     DefaultHost        = "localhost";
-    private final  static int        DefaultPort        = 8181;
+    private final  static String     DefaultHost                 = "localhost";
+    private final  static int        DefaultPort                 = 8181;
 
-    public static JFrame             mainJFrame              = null;
-    public static JLabel             hostJLabel              = null;
-    public static JTextField         hostJTextField          = null;
-    public static JLabel             portJLabel              = null;
-    public static JTextField         portJTextField          = null;
-    public static JButton            disconnectJButton       = null;
-    public static JTextArea          messagesJTextArea       = null;
-    public static JLabel             clientMessageJLabel     = null;
-    public static JTextField         clientMessageJTextField = null;
-    public static JButton            sendJButton             = null;
-    public static JList              contactsJList           = null;
-    public static DefaultListModel   defaultListModel        = null;
-    public static GridBagConstraints gridBagConstraints      = null;
-    public static JScrollPane        jScrollPane             = null;
-    public static Border             border                  = null;
+    public static JFrame               mainJFrame                = null;
+    public static JLabel               hostJLabel                = null;
+    public static JTextField           hostJTextField            = null;
+    public static JLabel               portJLabel                = null;
+    public static JTextField           portJTextField            = null;
+    public static JButton              disconnectJButton         = null;
+    public static JTextArea            messagesJTextArea         = null;
+    public static JLabel               clientMessageJLabel       = null;
+    public static JTextField           clientMessageJTextField   = null;
+    public static JButton              sendJButton               = null;
+    public static JList                contactsJList             = null;
+    public static JScrollPane          contactsJScrollPane       = null;
+    public static DefaultListModel     defaultListModel          = null;
+    public static GridBagConstraints   gridBagConstraints        = null;
+    public static JScrollPane          messagesJScrollPane       = null;
+    public static ArrayList<JTextArea> privateClientChatRoomList = new ArrayList<JTextArea>();
+    public static int                  currentReceiver           = 0;
 
-    public static JFrame             authJFrame              = null;
-    public static JLabel             authJLabel              = null;
-    public static JLabel             usernameJLabel          = null;
-    public static JLabel             passwordJLabel          = null;
-    public static JTextField         usernameJTextField      = null;
-    public static JPasswordField     passwordJPasswordField  = null;
-    public static JPanel             authJPanel              = null;
-    public static JButton            loginJButton            = null;
-    public static JButton            signupJButton           = null;
-    public static JLabel             incorrectJLabel         = null;
-    public static JLabel             loginInvalidJLabel      = null;
-    public static JLabel             passwordInvalidJLabel   = null;
+    public static JFrame               authJFrame                = null;
+    public static JLabel               authJLabel                = null;
+    public static JLabel               usernameJLabel            = null;
+    public static JLabel               passwordJLabel            = null;
+    public static JTextField           usernameJTextField        = null;
+    public static JPasswordField       passwordJPasswordField    = null;
+    public static JPanel               authJPanel                = null;
+    public static JButton              loginJButton              = null;
+    public static JButton              signupJButton             = null;
+    public static JLabel               incorrectJLabel           = null;
+    public static JLabel               loginInvalidJLabel        = null;
+    public static JLabel               passwordInvalidJLabel     = null;
 
     public static String getDefaultHost() {
         return DefaultHost;
@@ -110,31 +108,28 @@ public class ClientGUI extends JFrame {
     }
 
     public static void addMessagesJTextArea(Container pane) {
-        messagesJTextArea = new JTextArea(20, 0);
-        jScrollPane = new JScrollPane(messagesJTextArea,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        messagesJTextArea = new JTextArea();
+        messagesJTextArea.setColumns(30);
+        messagesJTextArea.setRows(20);
+        messagesJTextArea.setLineWrap(true);
+        messagesJTextArea.setWrapStyleWord(true);
         messagesJTextArea.setEditable(false);
-
-        border = BorderFactory.createLineBorder(Color.GRAY);
-        messagesJTextArea.setBorder(border);
+        messagesJScrollPane = new JScrollPane(messagesJTextArea);
 
         gridBagConstraints           = new GridBagConstraints();
         gridBagConstraints.insets    = new Insets(10, 10, 5, 15);
         gridBagConstraints.gridx     = 2;
         gridBagConstraints.gridy     = 1;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.fill      = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.gridwidth = 6;
 
-        pane.add(messagesJTextArea, gridBagConstraints);
-        pane.add(jScrollPane, gridBagConstraints);
+        pane.add(messagesJScrollPane, gridBagConstraints);
     }
 
     public static void addClientMessageJLabel(Container pane) {
         clientMessageJLabel = new JLabel("Your message:");
 
         gridBagConstraints           = new GridBagConstraints();
-        gridBagConstraints.insets    = new Insets(10, 10, 5, 10);
+        gridBagConstraints.insets    = new Insets(10, 30, 5, 10);
         gridBagConstraints.gridx     = 0;
         gridBagConstraints.gridy     = 2;
         gridBagConstraints.ipadx     = 5;
@@ -147,9 +142,10 @@ public class ClientGUI extends JFrame {
 
     public static void addClientMessageJTextField(Container pane) {
         clientMessageJTextField = new JTextField();
+        clientMessageJTextField.setText("Enter your message...");
 
         gridBagConstraints           = new GridBagConstraints();
-        gridBagConstraints.insets    = new Insets(5, 10, 10, 10);
+        gridBagConstraints.insets    = new Insets(5, 30, 10, 10);
         gridBagConstraints.gridx     = 0;
         gridBagConstraints.gridy     = 3;
         gridBagConstraints.ipadx     = 5;
@@ -174,33 +170,66 @@ public class ClientGUI extends JFrame {
     }
 
     public static void addContactsJList(Container pane, ArrayList<String> clientUsernameList) {
+        System.out.println(clientUsernameList);
+
         defaultListModel = new DefaultListModel();
         for(String username: clientUsernameList) {
             defaultListModel.addElement(username);
         }
 
         contactsJList = new JList(defaultListModel);
+        contactsJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        contactsJList.setVisibleRowCount(-1);
         contactsJList.setFixedCellHeight(30);
         contactsJList.setFixedCellWidth(250);
 
-        jScrollPane = new JScrollPane(contactsJList,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        contactsJScrollPane = new JScrollPane(contactsJList);
 
-        border = BorderFactory.createLineBorder(Color.GRAY);
-        contactsJList.setBorder(border);
+        MouseListener mouseListener = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if(e.getClickCount() == 2) {
+                    int index = contactsJList.locationToIndex(e.getPoint());
+                    currentReceiver = index;
+
+                    if(index == 0) {
+                        if(pane.getComponentCount() > 8) {
+                            pane.getComponent(pane.getComponentCount() - 1).setVisible(false);
+                        }
+                        messagesJScrollPane.setVisible(true);
+                    } else {
+                        if (!contactsJList.getModel().getElementAt(index).equals(usernameJTextField.getText())) {
+                            if(pane.getComponentCount() > 8) {
+                                pane.getComponent(pane.getComponentCount() - 1).setVisible(false);
+                            }
+                            messagesJScrollPane.setVisible(false);
+
+                            gridBagConstraints           = new GridBagConstraints();
+                            gridBagConstraints.insets    = new Insets(10, 10, 5, 15);
+                            gridBagConstraints.gridx     = 2;
+                            gridBagConstraints.gridy     = 1;
+                            gridBagConstraints.gridwidth = 6;
+                            pane.add(new JScrollPane(privateClientChatRoomList.get(index)), gridBagConstraints);
+                            pane.revalidate();
+                        }
+                    }
+                }
+            }
+        };
+
+        contactsJList.addMouseListener(mouseListener);
+        contactsJList.setFixedCellWidth(180);
 
         gridBagConstraints           = new GridBagConstraints();
         gridBagConstraints.insets    = new Insets(10, 30, 5, 30);
-        gridBagConstraints.gridx     = 0;
+        gridBagConstraints.gridx     = 1;
         gridBagConstraints.gridy     = 1;
         gridBagConstraints.ipadx     = 5;
         gridBagConstraints.ipady     = 5;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 1;
         gridBagConstraints.fill      = GridBagConstraints.VERTICAL;
 
-        pane.add(contactsJList, gridBagConstraints);
-        pane.add(jScrollPane, gridBagConstraints);
+        pane.add(contactsJScrollPane, gridBagConstraints);
     }
 
     public static void setContactsJList(DefaultListModel defaultListModel) {
@@ -208,10 +237,28 @@ public class ClientGUI extends JFrame {
         contactsJList.setModel(defaultListModel);
     }
 
+    public static void addPrivateClientChatRooms(ArrayList<String> clientUsernameList) {
+        Container pane = mainJFrame.getContentPane();
+
+        if(privateClientChatRoomList.size() < clientUsernameList.size()) {
+            for(int i = privateClientChatRoomList.size(); i < clientUsernameList.size(); ++i) {
+                JTextArea privateJTextArea = new JTextArea();
+                privateJTextArea.setColumns(30);
+                privateJTextArea.setRows(20);
+                privateJTextArea.setLineWrap(true);
+                privateJTextArea.setWrapStyleWord(true);
+                privateJTextArea.setEditable(false);
+                privateJTextArea.append("You are writing to " + clientUsernameList.get(i) + "\n");
+                privateClientChatRoomList.add(privateJTextArea);
+            }
+        }
+    }
+
     public static void createAndShowGIU(ArrayList<String> clientUsernameList) {
+        currentReceiver = 0;
+
         mainJFrame = new JFrame("ClientGUI");
         mainJFrame.setDefaultCloseOperation(mainJFrame.EXIT_ON_CLOSE);
-
         Container pane = mainJFrame.getContentPane();
         pane.setLayout(new GridBagLayout());
 
@@ -227,6 +274,7 @@ public class ClientGUI extends JFrame {
         mainJFrame.pack();
         mainJFrame.setLocationRelativeTo(null);
         mainJFrame.setVisible(true);
+        mainJFrame.setResizable(false);
     }
 
     public static void addAuthJLabel(Container pane) {
@@ -339,6 +387,7 @@ public class ClientGUI extends JFrame {
 
         authJFrame.setLocationRelativeTo(null);
         authJFrame.setVisible(true);
+        authJFrame.setResizable(false);
     }
 
     public static void closeAuthorization() {

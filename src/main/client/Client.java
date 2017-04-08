@@ -30,6 +30,7 @@ public class Client extends ClientGUI {
     private static JSONParser        jsonParser         = new JSONParser();
 
     private static boolean isAuthorized = false;
+    private static String  currentClientUsername = null;
 
     private class ClientHandler implements Runnable {
         public void run() {
@@ -52,11 +53,14 @@ public class Client extends ClientGUI {
                 } else {
                     String clientUsername = null;
                     String clientMessage  = null;
+                    String receiver       = null;
                     try {
-                        clientUsername  = (String) ((JSONObject) jsonParser.parse(message)).get("name");
-                        clientMessage   = (String) ((JSONObject) jsonParser.parse(message)).get("message");
+                        clientUsername  = (String)    ((JSONObject) jsonParser.parse(message)).get("name");
+                        clientMessage   = (String)    ((JSONObject) jsonParser.parse(message)).get("message");
+                        receiver        = (String)    ((JSONObject) jsonParser.parse(message)).get("receiver");
                         JSONArray users = (JSONArray) ((JSONObject) jsonParser.parse(message)).get("users");
                         clientUsernameList = new ArrayList<String>();
+                        clientUsernameList.add("Common chat");
                         for(int i = 0; i < users.size(); ++i) {
                             clientUsernameList.add((String) users.get(i));
                         }
@@ -64,7 +68,17 @@ public class Client extends ClientGUI {
                         System.out.println(e);
                     }
 
-                    messagesJTextArea.append("\n" + clientUsername + ": " + clientMessage);
+                    if(receiver.equals("everyone")) {
+                        messagesJTextArea.append("\n" + clientUsername + ": " + clientMessage);
+                    } else {
+                        if (receiver.equals(currentClientUsername)) {
+                            for(int index = 0; index < clientUsernameList.size(); ++index) {
+                                if(clientUsernameList.get(index).equals(clientUsername)) {
+                                    privateClientChatRoomList.get(index).append("From " + clientUsername + ": " + clientMessage + "\n");
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -99,6 +113,7 @@ public class Client extends ClientGUI {
             } else {
                 if (usernameJTextField.getText().length() != 0 &&
                         passwordJPasswordField.getPassword().length != 0) {
+                    currentClientUsername = usernameJTextField.getText();
                     try {
                         bw.write(usernameJTextField.getText());
                         bw.write("\n");
@@ -168,6 +183,7 @@ public class Client extends ClientGUI {
 
                     JSONArray users = (JSONArray) ((JSONObject) jsonParser.parse(serverSays)).get("users");
                     clientUsernameList = new ArrayList<String>();
+                    clientUsernameList.add("Common chat");
                     for(int i = 0; i < users.size(); ++i) {
                         clientUsernameList.add((String) users.get(i));
                     }
@@ -216,6 +232,14 @@ public class Client extends ClientGUI {
         }
     }
 
+    public String generateClientAnswer(String receiver, String message) {
+        JSONObject answer = new JSONObject();
+        answer.put("receiver", receiver);
+        answer.put("message", message);
+
+        return answer.toString();
+    }
+
     public void runClient() {
         messagesJTextArea.append("Enter your message('quit' for exiting)");
         sendJButton.addActionListener(new ActionListener() {
@@ -228,10 +252,16 @@ public class Client extends ClientGUI {
                     clientMessageJTextField.setText("Closed socket connection");
                 } else {
                     if(message.length() == 0) {
-                        clientMessageJTextField.setText("Enter your message!");
+                        clientMessageJTextField.setText("Your need to enter the message!");
                     } else {
-                        sendMessageToServer(message);
-                        clientMessageJTextField.setText("");
+                        if(currentReceiver == 0) {
+                            sendMessageToServer(generateClientAnswer("everyone", message));
+                            clientMessageJTextField.setText("Enter your message...");
+                        } else {
+                            privateClientChatRoomList.get(currentReceiver).append("From " + currentClientUsername + ": " + message + "\n");
+                            sendMessageToServer(generateClientAnswer(clientUsernameList.get(currentReceiver), message));
+                            clientMessageJTextField.setText("Enter your message...");
+                        }
                     }
                 }
             }
@@ -239,14 +269,19 @@ public class Client extends ClientGUI {
     }
 
     public static void updateMainJFrame() {
+        final DefaultListModel defaultListModel = new DefaultListModel();
+        for(int i = 0; i < clientUsernameList.size(); ++i) {
+            defaultListModel.addElement(clientUsernameList.get(i));
+        }
+        setContactsJList(defaultListModel);
+        addPrivateClientChatRooms(clientUsernameList);
+    }
+
+    public static void setTimerOnUpdateMainJFrame() {
         Timer timer = new Timer(5000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                final DefaultListModel defaultListModel = new DefaultListModel();
-                for(int i = 0; i < clientUsernameList.size(); ++i) {
-                    defaultListModel.addElement(clientUsernameList.get(i));
-                }
-                setContactsJList(defaultListModel);
+                updateMainJFrame();
             }
         });
         timer.setRepeats(true);
@@ -256,6 +291,8 @@ public class Client extends ClientGUI {
     public static void main(String []args) {
         Client client = new Client(defaultHost, defaultPort);
         client.runClient();
+
         updateMainJFrame();
+        setTimerOnUpdateMainJFrame();
     }
 }
