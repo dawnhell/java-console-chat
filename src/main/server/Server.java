@@ -188,7 +188,7 @@ public class Server {
 //                        } finally {
 //                            shutdownServer();
 //                        }
-                System.out.println("From " + clientName + ": " + clientMessage + " to" + receiver);
+                System.out.println("From " + clientName + ": " + clientMessage + " to " + receiver);
 
                 if(receiver.equals("everyone")) {
                     for(SocketHandler socketHandler: socketHandlerQueue) {

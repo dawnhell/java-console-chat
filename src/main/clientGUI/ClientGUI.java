@@ -11,8 +11,8 @@ import java.util.ArrayList;
  */
 
 public class ClientGUI extends JFrame {
-    private final  static String     DefaultHost                 = "localhost";
-    private final  static int        DefaultPort                 = 8181;
+    private final  static String       DefaultHost               = "localhost";
+    private final  static int          DefaultPort               = 8181;
 
     public static JFrame               mainJFrame                = null;
     public static JLabel               hostJLabel                = null;
@@ -63,6 +63,7 @@ public class ClientGUI extends JFrame {
 
     public static void addHostJLabel(Container pane) {
         hostJLabel = new JLabel("You are connected to : " + getDefaultHost());
+        hostJLabel.setFont(new Font("Arial", Font.PLAIN, 14));
 
         gridBagConstraints        = new GridBagConstraints();
         gridBagConstraints.insets = new Insets(10, 10, 10, 10);
@@ -76,6 +77,7 @@ public class ClientGUI extends JFrame {
 
     public static void addPortJLabel(Container pane) {
         portJLabel = new JLabel("On port: " + getDefaultPort());
+        portJLabel.setFont(new Font("Arial", Font.PLAIN, 14));
 
         gridBagConstraints        = new GridBagConstraints();
         gridBagConstraints.insets = new Insets(10, 10, 10, 10);
@@ -109,6 +111,7 @@ public class ClientGUI extends JFrame {
 
     public static void addMessagesJTextArea(Container pane) {
         messagesJTextArea = new JTextArea();
+        messagesJTextArea.setFont(new Font("Arial", Font.PLAIN, 14));
         messagesJTextArea.setColumns(30);
         messagesJTextArea.setRows(20);
         messagesJTextArea.setLineWrap(true);
@@ -243,6 +246,7 @@ public class ClientGUI extends JFrame {
         if(privateClientChatRoomList.size() < clientUsernameList.size()) {
             for(int i = privateClientChatRoomList.size(); i < clientUsernameList.size(); ++i) {
                 JTextArea privateJTextArea = new JTextArea();
+                privateJTextArea.setFont(new Font("Arial", Font.PLAIN, 14));
                 privateJTextArea.setColumns(30);
                 privateJTextArea.setRows(20);
                 privateJTextArea.setLineWrap(true);
@@ -257,7 +261,7 @@ public class ClientGUI extends JFrame {
     public static void createAndShowGIU(ArrayList<String> clientUsernameList) {
         currentReceiver = 0;
 
-        mainJFrame = new JFrame("ClientGUI");
+        mainJFrame = new JFrame("Chat");
         mainJFrame.setDefaultCloseOperation(mainJFrame.EXIT_ON_CLOSE);
         Container pane = mainJFrame.getContentPane();
         pane.setLayout(new GridBagLayout());
@@ -279,6 +283,7 @@ public class ClientGUI extends JFrame {
 
     public static void addAuthJLabel(Container pane) {
         authJLabel = new JLabel("Please, login or signup");
+        authJLabel.setFont(new Font("Arial", Font.PLAIN, 16));
 
         gridBagConstraints           = new GridBagConstraints();
         gridBagConstraints.anchor    = GridBagConstraints.CENTER;
@@ -315,29 +320,63 @@ public class ClientGUI extends JFrame {
         pane.add(usernameJTextField, gridBagConstraints);
 
         gridBagConstraints.gridx  = 0;
-        gridBagConstraints.gridy  = 3;
+        gridBagConstraints.gridy  = 4;
         gridBagConstraints.insets = new Insets(10, 10, 0, 10);
         pane.add(passwordJLabel, gridBagConstraints);
 
         gridBagConstraints.gridx  = 0;
-        gridBagConstraints.gridy  = 4;
+        gridBagConstraints.gridy  = 5;
         gridBagConstraints.insets = new Insets(0, 10, 10, 10);
         pane.add(passwordJPasswordField, gridBagConstraints);
     }
 
+    public static void createAndShowIncorrectLoginJLabel(Container pane) {
+        if(loginInvalidJLabel == null) {
+            loginInvalidJLabel = new JLabel("Enter login!");
+            gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.anchor = GridBagConstraints.CENTER;
+            gridBagConstraints.insets = new Insets(0, 10, 10, 0);
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 3;
+            gridBagConstraints.ipadx = 5;
+            gridBagConstraints.ipady = 5;
+
+            authJFrame.add(loginInvalidJLabel, gridBagConstraints);
+            authJFrame.revalidate();
+        }
+    }
+
+    public static void createAndShowIncorrectPasswordJLabel(Container pane) {
+        if(passwordInvalidJLabel == null) {
+            passwordInvalidJLabel = new JLabel("Enter password!");
+            gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.anchor = GridBagConstraints.CENTER;
+            gridBagConstraints.insets = new Insets(0, 10, 10, 0);
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 6;
+            gridBagConstraints.ipadx = 5;
+            gridBagConstraints.ipady = 5;
+
+            authJFrame.add(passwordInvalidJLabel, gridBagConstraints);
+            authJFrame.revalidate();
+        }
+    }
+
     public static void createAndShowIncorrectAuthJLabel(Container pane) {
-        incorrectJLabel = new JLabel("Incorrect username or password.");
+        if(incorrectJLabel == null) {
+            incorrectJLabel = new JLabel("Incorrect username or password.");
 
-        gridBagConstraints           = new GridBagConstraints();
-        gridBagConstraints.anchor    = GridBagConstraints.CENTER;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets    = new Insets(10, 10, 10, 10);
-        gridBagConstraints.gridx     = 0;
-        gridBagConstraints.gridy     = 6;
-        gridBagConstraints.ipadx     = 5;
-        gridBagConstraints.ipady     = 5;
+            gridBagConstraints           = new GridBagConstraints();
+            gridBagConstraints.anchor    = GridBagConstraints.CENTER;
+            gridBagConstraints.gridwidth = 2;
+            gridBagConstraints.insets    = new Insets(10, 10, 10, 10);
+            gridBagConstraints.gridx     = 0;
+            gridBagConstraints.gridy     = 7;
+            gridBagConstraints.ipadx     = 5;
+            gridBagConstraints.ipady     = 5;
 
-        pane.add(incorrectJLabel, gridBagConstraints);
+            pane.add(incorrectJLabel, gridBagConstraints);
+        }
     }
 
     public static void addAuthJButtons(Container pane) {
@@ -348,7 +387,7 @@ public class ClientGUI extends JFrame {
         gridBagConstraints.gridwidth = 1;
         gridBagConstraints.insets    = new Insets(10, 10, 10, 10);
         gridBagConstraints.gridx     = 0;
-        gridBagConstraints.gridy     = 7;
+        gridBagConstraints.gridy     = 8;
         gridBagConstraints.ipadx     = 5;
         gridBagConstraints.ipady     = 5;
 
@@ -360,7 +399,7 @@ public class ClientGUI extends JFrame {
         gridBagConstraints.anchor = GridBagConstraints.CENTER;
         gridBagConstraints.insets = new Insets(10, 10, 10, 10);
         gridBagConstraints.gridx  = 1;
-        gridBagConstraints.gridy  = 7;
+        gridBagConstraints.gridy  = 8;
         gridBagConstraints.ipadx  = 5;
         gridBagConstraints.ipady  = 5;
 
@@ -376,15 +415,8 @@ public class ClientGUI extends JFrame {
         addAuthJPanel(authJFrame);
         addAuthJButtons(authJFrame);
 
-//        authJFrame.pack();
-//        authJFrame.setSize(400, 250);
         authJFrame.setResizable(false);
         authJFrame.setMinimumSize(new Dimension(400, 260));
-
-//        Dimension dimension = new Dimension(, authJFrame.getHeight());
-
-//        Toolkit toolkit =
-
         authJFrame.setLocationRelativeTo(null);
         authJFrame.setVisible(true);
         authJFrame.setResizable(false);

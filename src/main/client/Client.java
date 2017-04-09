@@ -86,31 +86,19 @@ public class Client extends ClientGUI {
 
     public void checkAndSendAuthorizationFields() {
         if (usernameJTextField.getText().length() == 0) {
-            loginInvalidJLabel = new JLabel("Enter login!");
-            gridBagConstraints = new GridBagConstraints();
-            gridBagConstraints.anchor = GridBagConstraints.CENTER;
-            gridBagConstraints.insets = new Insets(0, 0, 10, 0);
-            gridBagConstraints.gridx = 2;
-            gridBagConstraints.gridy = 2;
-            gridBagConstraints.ipadx = 5;
-            gridBagConstraints.ipady = 5;
-
-            authJFrame.add(loginInvalidJLabel, gridBagConstraints);
-            authJFrame.revalidate();
+            createAndShowIncorrectLoginJLabel(mainJFrame.getContentPane());
         } else {
-            if (passwordJPasswordField.getPassword().length == 0) {
-                passwordInvalidJLabel = new JLabel("Enter password!");
-                gridBagConstraints = new GridBagConstraints();
-                gridBagConstraints.anchor = GridBagConstraints.CENTER;
-                gridBagConstraints.insets = new Insets(0, 0, 10, 0);
-                gridBagConstraints.gridx = 2;
-                gridBagConstraints.gridy = 4;
-                gridBagConstraints.ipadx = 5;
-                gridBagConstraints.ipady = 5;
+            try {
+                loginInvalidJLabel.setVisible(false);
+            } catch (Exception e) {}
 
-                authJFrame.add(passwordInvalidJLabel, gridBagConstraints);
-                authJFrame.revalidate();
+            if (passwordJPasswordField.getPassword().length == 0) {
+                createAndShowIncorrectPasswordJLabel(mainJFrame.getContentPane());
             } else {
+                try{
+                    passwordInvalidJLabel.setVisible(false);
+                } catch (Exception e) {}
+
                 if (usernameJTextField.getText().length() != 0 &&
                         passwordJPasswordField.getPassword().length != 0) {
                     currentClientUsername = usernameJTextField.getText();
