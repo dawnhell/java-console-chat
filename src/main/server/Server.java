@@ -23,6 +23,11 @@ public class Server {
     private Thread                       serverThread       = null;
     private BlockingQueue<SocketHandler> socketHandlerQueue = new LinkedBlockingQueue<SocketHandler>();
     private ArrayList<String>            clientUsernameList = new ArrayList<String>();
+    private String                       serverStatus       = "not initialized";
+
+    public String getServerStatus() {
+        return this.serverStatus;
+    }
 
     private class SocketHandler implements Runnable {
         private Socket            socket;
@@ -178,30 +183,30 @@ public class Server {
 //                if(clientMessage.equalsIgnoreCase("QUIT")) {
 //                    closeSocketConnection();
 //                } else {
-//                    if(clientMessage.equalsIgnoreCase("SHUTDOWN")) {
-//                        serverThread.interrupt();
-//                        try {
-                            /** Creating faked socket connection, to be able to interrupt */
-//                            new Socket("localhost", port);
-//                        } catch(IOException ioe) {
-//                            ioe.printStackTrace();
-//                        } finally {
-//                            shutdownServer();
-//                        }
-                System.out.println("From " + clientName + ": " + clientMessage + " to " + receiver);
-
-                if(receiver.equals("everyone")) {
-                    for(SocketHandler socketHandler: socketHandlerQueue) {
-                        socketHandler.sendMessage(generateServerAnswer("authorized", clientName, "everyone", clientMessage));
+                if(clientMessage.equalsIgnoreCase("SHUTDOWN")) {
+                    serverThread.interrupt();
+                    try {
+                        new Socket("localhost", port);
+                    } catch (IOException ioe) {
+                        ioe.printStackTrace();
+                    } finally {
+                        shutdownServer();
                     }
                 } else {
-                    for(SocketHandler socketHandler: socketHandlerQueue) {
-                        if(socketHandler.clientName.equals(receiver)) {
-                            socketHandler.sendMessage(generateServerAnswer("authorized", clientName, receiver, clientMessage));
+                    System.out.println("From " + clientName + ": " + clientMessage + " to " + receiver);
+
+                    if(receiver.equals("everyone")) {
+                        for(SocketHandler socketHandler: socketHandlerQueue) {
+                            socketHandler.sendMessage(generateServerAnswer("authorized", clientName, "everyone", clientMessage));
+                        }
+                    } else {
+                        for(SocketHandler socketHandler: socketHandlerQueue) {
+                            if(socketHandler.clientName.equals(receiver)) {
+                                socketHandler.sendMessage(generateServerAnswer("authorized", clientName, receiver, clientMessage));
+                            }
                         }
                     }
                 }
-//                }
             }
         }
 
@@ -241,13 +246,15 @@ public class Server {
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Server is running on port " + port);
+            this.serverStatus = "initialized on " + this.port;
         } catch(IOException ioe) {
             System.out.println("Can't create server on port " + port);
+            this.serverStatus = "can't initialize on " + port;
             ioe.printStackTrace();
         }
     }
 
-    private synchronized void shutdownServer() {
+    public synchronized void shutdownServer() {
         for(SocketHandler socketHandler: socketHandlerQueue) {
             socketHandler.closeSocketConnection();
         }
@@ -268,6 +275,7 @@ public class Server {
             try {
                 socket = serverSocket.accept();
                 System.out.println("Accepted from " + socket.getInetAddress());
+                this.serverStatus = "accepted new client";
             } catch(IOException ioe) {
                 ioe.printStackTrace();
                 shutdownServer();
