@@ -189,13 +189,14 @@ public class Server {
                         shutdownServer();
                     }
                 } else {
-                    System.out.println("From " + clientName + ": " + clientMessage + " to " + receiver);
+                    System.out.println("From " + clientName + ": '" + clientMessage + "' to " + receiver);
 
                     if(receiver.equals("everyone")) {
                         for(SocketHandler socketHandler: socketHandlerQueue) {
                             socketHandler.sendMessage(generateServerAnswer("authorized", clientName, "everyone", clientMessage));
                         }
                     } else {
+                        System.out.println(receiver+ "SEnding to him");
                         for(SocketHandler socketHandler: socketHandlerQueue) {
                             if(socketHandler.clientName.equals(receiver)) {
                                 socketHandler.sendMessage(generateServerAnswer("authorized", clientName, receiver, clientMessage));

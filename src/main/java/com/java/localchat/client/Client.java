@@ -83,18 +83,14 @@ public class Client extends ClientGUI {
 
     public void checkAndSendAuthorizationFields() {
         if (usernameJTextField.getText().length() == 0) {
-            createAndShowIncorrectLoginJLabel(mainJFrame.getContentPane());
+            showLoginInvalidJLabel(authJFrame.getContentPane());
         } else {
-            try {
-                loginInvalidJLabel.setVisible(false);
-            } catch (Exception e) {}
+            hideLoginInvalidJLabel(authJFrame.getContentPane());
 
             if (passwordJPasswordField.getPassword().length == 0) {
-                createAndShowIncorrectPasswordJLabel(mainJFrame.getContentPane());
+                showPasswordInvalidJLabel(authJFrame.getContentPane());
             } else {
-                try{
-                    passwordInvalidJLabel.setVisible(false);
-                } catch (Exception e) {}
+                hidePasswordInvalidJLabel(authJFrame.getContentPane());
 
                 if (usernameJTextField.getText().length() != 0 &&
                         passwordJPasswordField.getPassword().length != 0) {
@@ -174,7 +170,7 @@ public class Client extends ClientGUI {
                     }
 
                     closeAuthorization();
-                    createAndShowGIU(clientUsernameList);
+                    createAndShowGIU(clientUsernameList, currentClientUsername);
 
                     Thread newThread = new Thread(new ClientHandler());
                     newThread.start();
@@ -183,8 +179,7 @@ public class Client extends ClientGUI {
                 if(((JSONObject) jsonParser.parse(serverSays)).get("status").equals("incorrect")) {
                     System.out.println("not authorized");
                     isAuthorized = false;
-                    createAndShowIncorrectAuthJLabel(authJFrame);
-                    authJFrame.revalidate();
+                    showIncorrectJLabel(authJFrame.getContentPane());
                 }
             }
         } catch(IOException ioe) {

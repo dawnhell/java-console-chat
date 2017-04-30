@@ -16,11 +16,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>net.java.timingframework</groupId>
-      <artifactId>timingframework-swing</artifactId>
-      <version>6.1.0</version>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.12</version>
@@ -50,11 +45,11 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9.1</version>
         <configuration>
-          <windowtitle>swing-material API</windowtitle>
-          <doctitle>swing-material</doctitle>
+          <windowtitle>java local chat API</windowtitle>
+          <doctitle>java local chat</doctitle>
           <show>public</show>
           <footer>
-            <![CDATA[swing-material ${project.version}<br/>Generated ${maven.build.timestamp}]]>
+            <![CDATA[local chat ${project.version}<br/>Generated ${maven.build.timestamp}]]>
           </footer>
         </configuration>
         <executions>
