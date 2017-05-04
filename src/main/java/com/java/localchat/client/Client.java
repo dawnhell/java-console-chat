@@ -1,6 +1,7 @@
 package com.java.localchat.client;
 
 import com.java.localchat.clientGUI.ClientGUI;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -18,15 +19,15 @@ import java.util.ArrayList;
  */
 
 public class Client extends ClientGUI {
-    private Socket socket             = null;
-    private BufferedReader br                 = null;
-    private BufferedWriter bw                 = null;
+    private Socket                   socket             = null;
+    private BufferedReader           br                 = null;
+    private BufferedWriter           bw                 = null;
     private static final String      defaultHost        = "localhost";
     private static final int         defaultPort        = 8181;
     private static ArrayList<String> clientUsernameList = new ArrayList<String>();
-    private static JSONParser jsonParser         = new JSONParser();
+    private static JSONParser        jsonParser         = new JSONParser();
 
-    private static boolean isAuthorized = false;
+    private static boolean isAuthorized          = false;
     private static String  currentClientUsername = null;
 
     private class ClientHandler implements Runnable {
@@ -184,7 +185,7 @@ public class Client extends ClientGUI {
             }
         } catch(IOException ioe) {
             System.out.println("Can't connect to the server " + host + ":" + port);
-            ioe.printStackTrace();
+            createAndShowServerDisabledJFrame();
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -232,8 +233,8 @@ public class Client extends ClientGUI {
                     System.out.println("Closed socket connection");
                     clientMessageJTextField.setText("Closed socket connection");
                 } else {
-                    if(message.length() == 0) {
-                        clientMessageJTextField.setText("Your need to enter the message!");
+                    if(message.length() == 0 || message.equals("Your must to enter the message!") || message.equals("Enter your message...")) {
+                        clientMessageJTextField.setText("Your must to enter the message!");
                     } else {
                         if(currentReceiver == 0) {
                             sendMessageToServer(generateClientAnswer("everyone", message));

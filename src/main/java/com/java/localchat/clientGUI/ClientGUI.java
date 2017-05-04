@@ -36,6 +36,8 @@ public class ClientGUI extends JFrame {
     public static JLabel               loginInvalidJLabel        = null;
     public static JLabel               passwordInvalidJLabel     = null;
 
+    public static JFrame               serverDisabledJFrame      = null;
+
     public static String getDefaultHost() {
         return DefaultHost;
     }
@@ -181,6 +183,24 @@ public class ClientGUI extends JFrame {
         clientMessageJTextField.setText("Enter your message...");
         clientMessageJTextField.setSize(1, 20);
         clientMessageJTextField.setColumns(25);
+        clientMessageJTextField.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                clientMessageJTextField.setText("");
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {}
+
+            @Override
+            public void mouseReleased(MouseEvent e) {}
+
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+
+            @Override
+            public void mouseExited(MouseEvent e) {}
+        });
 
         gridBagConstraints           = new GridBagConstraints();
         gridBagConstraints.insets    = new Insets(5, 250, 10, 10);
@@ -411,5 +431,44 @@ public class ClientGUI extends JFrame {
 
     public static void closeAuthorization() {
         authJFrame.setVisible(false);
+    }
+
+    public static void createAndShowServerDisabledJFrame() {
+        serverDisabledJFrame = new JFrame("Server disabled");
+        serverDisabledJFrame.getContentPane().setBackground(new Color(0xFAFAFA));
+        serverDisabledJFrame.setDefaultCloseOperation(serverDisabledJFrame.EXIT_ON_CLOSE);
+        serverDisabledJFrame.setLayout(new GridBagLayout());
+
+        JLabel jLabel = new JLabel("Server is not available now.");
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.ipadx = 10;
+        gridBagConstraints.ipady = 10;
+        gridBagConstraints.insets = new Insets(10, 10, 10, 10);
+        serverDisabledJFrame.getContentPane().add(jLabel, gridBagConstraints);
+
+        JButton jButton = new JButton("Ok");
+        jButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                serverDisabledJFrame.dispose();
+            }
+        });
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.ipadx = 10;
+        gridBagConstraints.ipady = 10;
+        gridBagConstraints.insets = new Insets(10, 10, 10, 10);
+        serverDisabledJFrame.getContentPane().add(jButton, gridBagConstraints);
+
+
+        serverDisabledJFrame.setResizable(false);
+        serverDisabledJFrame.setMinimumSize(new Dimension(250, 150));
+        serverDisabledJFrame.setLocationRelativeTo(null);
+        serverDisabledJFrame.setVisible(true);
     }
 }

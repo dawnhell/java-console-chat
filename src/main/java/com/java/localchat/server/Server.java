@@ -18,11 +18,11 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 
 public class Server {
-    private ServerSocket serverSocket       = null;
+    private ServerSocket                 serverSocket       = null;
     private int                          port               = 8181;
     private Thread                       serverThread       = null;
     private BlockingQueue<SocketHandler> socketHandlerQueue = new LinkedBlockingQueue<SocketHandler>();
-    private ArrayList<String> clientUsernameList = new ArrayList<String>();
+    private ArrayList<String>            clientUsernameList = new ArrayList<String>();
     private String                       serverStatus       = "not initialized";
 
     public String getServerStatus() {
@@ -30,11 +30,11 @@ public class Server {
     }
 
     private class SocketHandler implements Runnable {
-        private Socket socket;
+        private Socket         socket;
         private BufferedReader br;
         private BufferedWriter bw;
-        private boolean           isAuthorized = false;
-        private String            clientName   = null;
+        private boolean        isAuthorized = false;
+        private String         clientName   = null;
 
         public SocketHandler(Socket socket) throws IOException {
             this.socket = socket;

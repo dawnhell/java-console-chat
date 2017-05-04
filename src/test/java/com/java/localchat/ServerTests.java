@@ -27,16 +27,6 @@ public class ServerTests {
         assertEquals("initialized on " + this.port, status);
     }
 
-    @Test
-    @DisplayName("should start server and connect the client to it")
-    @Disabled
-    public void startServerAndConnectClientTest() {
-        this.server = new Server(this.port);
-        this.server.runServer();
-
-        Client client = new Client("localhost", this.port);
-    }
-
     @AfterAll
     static void afterAll() {
         System.out.println("Finished Server tests.");
