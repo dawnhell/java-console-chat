@@ -160,7 +160,7 @@ public class Client extends ClientGUI {
                 }
 
                 if (((JSONObject) jsonParser.parse(serverSays)).get("status").equals("authorized")) {
-                    System.out.println("authorized");
+                    System.out.println("User authorized.");
                     isAuthorized = true;
 
                     JSONArray users = (JSONArray) ((JSONObject) jsonParser.parse(serverSays)).get("users");
@@ -178,9 +178,15 @@ public class Client extends ClientGUI {
                 }
 
                 if(((JSONObject) jsonParser.parse(serverSays)).get("status").equals("incorrect")) {
-                    System.out.println("not authorized");
+                    System.out.println("User is not authorized");
                     isAuthorized = false;
                     showIncorrectJLabel(authJFrame.getContentPane());
+                }
+
+                if(((JSONObject) jsonParser.parse(serverSays)).get("status").equals("exists")) {
+                    System.out.println("user with such name already exists");
+                    isAuthorized = false;
+                    showExistsJLabel(authJFrame.getContentPane());
                 }
             }
         } catch(IOException ioe) {

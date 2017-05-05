@@ -3,7 +3,6 @@ package com.java.localchat.clientGUI;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.net.ContentHandler;
 import java.util.ArrayList;
 
 /**
@@ -33,6 +32,7 @@ public class ClientGUI extends JFrame {
     public static JButton              loginJButton              = null;
     public static JButton              signupJButton             = null;
     public static JLabel               incorrectJLabel           = null;
+    public static JLabel               existsJLabel              = null;
     public static JLabel               loginInvalidJLabel        = null;
     public static JLabel               passwordInvalidJLabel     = null;
 
@@ -313,6 +313,21 @@ public class ClientGUI extends JFrame {
         pane.add(incorrectJLabel, gridBagConstraints);
     }
 
+    public static void addExistsJLabel(Container pane) {
+        existsJLabel                 = new JLabel("User with such name already exists.");
+        existsJLabel.setVisible(false);
+        gridBagConstraints           = new GridBagConstraints();
+        gridBagConstraints.anchor    = GridBagConstraints.CENTER;
+        gridBagConstraints.gridwidth = 1;
+        gridBagConstraints.insets    = new Insets(10, 0, 10, 0);
+        gridBagConstraints.gridx     = 0;
+        gridBagConstraints.gridy     = 4;
+        gridBagConstraints.ipadx     = 5;
+        gridBagConstraints.ipady     = 5;
+
+        pane.add(existsJLabel, gridBagConstraints);
+    }
+
     public static void addAuthInputFields(Container pane) {
         JPanel jPanel      = new JPanel(new GridBagLayout());
         jPanel.setBackground(new Color(0xFAFAFA));
@@ -350,6 +365,7 @@ public class ClientGUI extends JFrame {
         addLoginInvalidJLabel   (jPanel);
         addPasswordInvalidJLabel(jPanel);
         addIncorrectJLabel      (jPanel);
+        addExistsJLabel         (jPanel);
 
         pane.add(jPanel, BorderLayout.CENTER);
     }
@@ -357,6 +373,7 @@ public class ClientGUI extends JFrame {
     public static void showLoginInvalidJLabel(Container pane) {
         passwordInvalidJLabel.setVisible(false);
         incorrectJLabel      .setVisible(false);
+        existsJLabel         .setVisible(false);
         loginInvalidJLabel   .setVisible(true);
         pane.revalidate();
     }
@@ -364,6 +381,7 @@ public class ClientGUI extends JFrame {
     public static void showPasswordInvalidJLabel(Container pane) {
         loginInvalidJLabel   .setVisible(false);
         incorrectJLabel      .setVisible(false);
+        existsJLabel         .setVisible(false);
         passwordInvalidJLabel.setVisible(true);
         pane.revalidate();
     }
@@ -371,7 +389,16 @@ public class ClientGUI extends JFrame {
     public static void showIncorrectJLabel(Container pane) {
         loginInvalidJLabel   .setVisible(false);
         passwordInvalidJLabel.setVisible(false);
+        existsJLabel         .setVisible(false);
         incorrectJLabel      .setVisible(true);
+        pane.revalidate();
+    }
+
+    public static void showExistsJLabel(Container pane) {
+        loginInvalidJLabel   .setVisible(false);
+        passwordInvalidJLabel.setVisible(false);
+        incorrectJLabel      .setVisible(false);
+        existsJLabel         .setVisible(true);
         pane.revalidate();
     }
 

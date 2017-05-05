@@ -69,7 +69,7 @@ public class Server {
             JSONParser parser     = new JSONParser();
             try {
                 FileReader fileReader = new FileReader(System.getProperty("user.dir") + "/src/main/java/com/java/localchat/server/users.json");
-                jsonObject = (JSONObject) parser.parse(fileReader);
+                jsonObject            = (JSONObject) parser.parse(fileReader);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -99,7 +99,7 @@ public class Server {
         }
 
         public boolean signup() {
-            System.out.println("Waiting for client's singning up.");
+            System.out.println("Waiting for client's signing up.");
 
             String username = null;
             String password = null;
@@ -113,10 +113,23 @@ public class Server {
             JSONObject jsonObject = null;
             JSONParser parser     = new JSONParser();
             try {
-                FileReader fileReader = new FileReader(System.getProperty("user.dir") + "/src/main/server/users.json");
-                jsonObject = (JSONObject) parser.parse(fileReader);
+                FileReader fileReader = new FileReader(System.getProperty("user.dir") + "/src/main/java/com/java/localchat/server/users.json");
+                jsonObject            = (JSONObject) parser.parse(fileReader);
             } catch (Exception ex) {
                 ex.printStackTrace();
+            }
+
+            JSONArray        arr      = (JSONArray) jsonObject.get("users");
+            Iterator<Object> iterator = arr.iterator();
+            while (iterator.hasNext()) {
+                JSONObject temp         = (JSONObject) iterator.next();
+                String     tempUsername = (String) temp.get("username");
+                if(username.equals(tempUsername)) {
+                    System.out.println("User with such name already exists.");
+                    sendMessage(generateServerAnswer("exists", "", username, ""));
+
+                    return false;
+                }
             }
 
             JSONArray  userArr = (JSONArray) jsonObject.get("users");
@@ -128,8 +141,13 @@ public class Server {
             JSONObject usersObject = new JSONObject();
             usersObject.put("users", userArr);
 
+            clientName = username;
+            if(!clientUsernameList.contains(clientName)) {
+                clientUsernameList.add(clientName);
+            }
+
             try {
-                FileWriter jsonFileWriter = new FileWriter(System.getProperty("user.dir") + "/src/main/server/users.json");
+                FileWriter jsonFileWriter = new FileWriter(System.getProperty("user.dir") + "/src/main/java/com/java/localchat/server/users.json");
                 jsonFileWriter.write(usersObject.toJSONString());
                 jsonFileWriter.flush();
                 jsonFileWriter.close();
@@ -138,13 +156,8 @@ public class Server {
             }
             System.out.println("User has been added.");
 
-            clientName = username;
-            if(!clientUsernameList.contains(clientName)) {
-                clientUsernameList.add(clientName);
-            }
-
             for(SocketHandler socketHandler: socketHandlerQueue) {
-                socketHandler.sendMessage(generateServerAnswer("authorized", clientName, clientName, "Has just signed up!"));
+                socketHandler.sendMessage(generateServerAnswer("authorized", clientName, "everyone", "Has just connected."));
             }
 
             return true;
@@ -172,11 +185,11 @@ public class Server {
                 String clientMessage = null;
                 try {
                     String response = br.readLine();
-                    receiver = ((JSONObject) new JSONParser().parse(response)).get("receiver").toString();
-                    clientMessage = ((JSONObject) new JSONParser().parse(response)).get("message").toString();
+                    receiver        = ((JSONObject) new JSONParser().parse(response)).get("receiver").toString();
+                    clientMessage   = ((JSONObject) new JSONParser().parse(response)).get("message").toString();
                 } catch (Exception ex) {
                     System.out.println("Can't read client's authorization message.");
-                    ex.printStackTrace();
+//                    ex.printStackTrace();
                 }
 
                 if(clientMessage.equalsIgnoreCase("SHUTDOWN")) {
@@ -196,7 +209,7 @@ public class Server {
                             socketHandler.sendMessage(generateServerAnswer("authorized", clientName, "everyone", clientMessage));
                         }
                     } else {
-                        System.out.println(receiver+ "SEnding to him");
+                        System.out.println(receiver+ "Sending to him");
                         for(SocketHandler socketHandler: socketHandlerQueue) {
                             if(socketHandler.clientName.equals(receiver)) {
                                 socketHandler.sendMessage(generateServerAnswer("authorized", clientName, receiver, clientMessage));
